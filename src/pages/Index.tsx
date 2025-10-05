@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import eventureLogoUrl from "@/assets/eventure-logo.png";
 
 const Index = () => {
   const { data: events, isLoading } = useQuery({
@@ -89,12 +90,11 @@ const Index = () => {
         <footer className="border-t py-12 mt-16">
           <div className="container">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-                  <span className="text-white font-bold">E</span>
-                </div>
-                <span className="font-bold text-lg">Eventure</span>
-              </div>
+              <img 
+                src={eventureLogoUrl} 
+                alt="Eventure" 
+                className="h-8 w-auto"
+              />
               <p className="text-sm text-muted-foreground">
                 © 2025 Eventure. Todos os direitos reservados.
               </p>
