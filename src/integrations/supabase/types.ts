@@ -23,8 +23,11 @@ export type Database = {
           duration: number
           event_id: string
           id: string
+          instrutor: string | null
           location: string | null
+          tema: string | null
           title: string
+          vagas: number | null
         }
         Insert: {
           activity_date: string
@@ -34,8 +37,11 @@ export type Database = {
           duration: number
           event_id: string
           id?: string
+          instrutor?: string | null
           location?: string | null
+          tema?: string | null
           title: string
+          vagas?: number | null
         }
         Update: {
           activity_date?: string
@@ -45,8 +51,11 @@ export type Database = {
           duration?: number
           event_id?: string
           id?: string
+          instrutor?: string | null
           location?: string | null
+          tema?: string | null
           title?: string
+          vagas?: number | null
         }
         Relationships: [
           {
