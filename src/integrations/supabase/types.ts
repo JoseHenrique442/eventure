@@ -23,11 +23,8 @@ export type Database = {
           duration: number
           event_id: string
           id: string
-          instrutor: string | null
           location: string | null
-          tema: string | null
           title: string
-          vagas: number | null
         }
         Insert: {
           activity_date: string
@@ -37,11 +34,8 @@ export type Database = {
           duration: number
           event_id: string
           id?: string
-          instrutor?: string | null
           location?: string | null
-          tema?: string | null
           title: string
-          vagas?: number | null
         }
         Update: {
           activity_date?: string
@@ -51,11 +45,8 @@ export type Database = {
           duration?: number
           event_id?: string
           id?: string
-          instrutor?: string | null
           location?: string | null
-          tema?: string | null
           title?: string
-          vagas?: number | null
         }
         Relationships: [
           {
@@ -92,6 +83,35 @@ export type Database = {
             foreignKeyName: "activity_speakers_speaker_id_fkey"
             columns: ["speaker_id"]
             isOneToOne: false
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      celebrities: {
+        Row: {
+          area_fama: string
+          created_at: string | null
+          id: string
+          speaker_id: string
+        }
+        Insert: {
+          area_fama: string
+          created_at?: string | null
+          id?: string
+          speaker_id: string
+        }
+        Update: {
+          area_fama?: string
+          created_at?: string | null
+          id?: string
+          speaker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "celebrities_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: true
             referencedRelation: "speakers"
             referencedColumns: ["id"]
           },
@@ -303,45 +323,59 @@ export type Database = {
         }
         Relationships: []
       }
+      lectures: {
+        Row: {
+          activity_id: string
+          created_at: string | null
+          id: string
+          tema: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string | null
+          id?: string
+          tema: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string | null
+          id?: string
+          tema?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lectures_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: true
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participants: {
         Row: {
-          beneficios_exclusivos: string | null
-          cargo: string | null
           created_at: string | null
           email: string
-          empresa: string | null
           full_name: string
           id: string
-          instituicao_ensino: string | null
-          matricula: string | null
           participant_type: Database["public"]["Enums"]["participant_type"]
           phone: string | null
           user_id: string
         }
         Insert: {
-          beneficios_exclusivos?: string | null
-          cargo?: string | null
           created_at?: string | null
           email: string
-          empresa?: string | null
           full_name: string
           id?: string
-          instituicao_ensino?: string | null
-          matricula?: string | null
           participant_type: Database["public"]["Enums"]["participant_type"]
           phone?: string | null
           user_id: string
         }
         Update: {
-          beneficios_exclusivos?: string | null
-          cargo?: string | null
           created_at?: string | null
           email?: string
-          empresa?: string | null
           full_name?: string
           id?: string
-          instituicao_ensino?: string | null
-          matricula?: string | null
           participant_type?: Database["public"]["Enums"]["participant_type"]
           phone?: string | null
           user_id?: string
@@ -386,10 +420,40 @@ export type Database = {
           },
         ]
       }
+      professionals: {
+        Row: {
+          cargo: string | null
+          created_at: string | null
+          empresa: string | null
+          id: string
+          participant_id: string
+        }
+        Insert: {
+          cargo?: string | null
+          created_at?: string | null
+          empresa?: string | null
+          id?: string
+          participant_id: string
+        }
+        Update: {
+          cargo?: string | null
+          created_at?: string | null
+          empresa?: string | null
+          id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professionals_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       speakers: {
         Row: {
-          area_atuacao: string | null
-          area_fama: string | null
           bio: string | null
           created_at: string | null
           id: string
@@ -398,8 +462,6 @@ export type Database = {
           speaker_type: Database["public"]["Enums"]["speaker_type"]
         }
         Insert: {
-          area_atuacao?: string | null
-          area_fama?: string | null
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -408,8 +470,6 @@ export type Database = {
           speaker_type: Database["public"]["Enums"]["speaker_type"]
         }
         Update: {
-          area_atuacao?: string | null
-          area_fama?: string | null
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -418,6 +478,67 @@ export type Database = {
           speaker_type?: Database["public"]["Enums"]["speaker_type"]
         }
         Relationships: []
+      }
+      specialists: {
+        Row: {
+          area_atuacao: string
+          created_at: string | null
+          id: string
+          speaker_id: string
+        }
+        Insert: {
+          area_atuacao: string
+          created_at?: string | null
+          id?: string
+          speaker_id: string
+        }
+        Update: {
+          area_atuacao?: string
+          created_at?: string | null
+          id?: string
+          speaker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialists_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: true
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          id: string
+          instituicao_ensino: string | null
+          matricula: string | null
+          participant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instituicao_ensino?: string | null
+          matricula?: string | null
+          participant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instituicao_ensino?: string | null
+          matricula?: string | null
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tickets: {
         Row: {
@@ -453,6 +574,38 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshops: {
+        Row: {
+          activity_id: string
+          created_at: string | null
+          id: string
+          instrutor: string
+          vagas: number
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string | null
+          id?: string
+          instrutor: string
+          vagas: number
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string | null
+          id?: string
+          instrutor?: string
+          vagas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshops_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: true
+            referencedRelation: "activities"
             referencedColumns: ["id"]
           },
         ]
