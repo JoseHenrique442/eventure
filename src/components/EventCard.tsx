@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
 
 interface EventCardProps {
   id: string;
@@ -29,6 +30,7 @@ const eventTypeBadgeVariant = {
 };
 
 export const EventCard = ({
+  id,
   name,
   description,
   startDate,
@@ -75,9 +77,11 @@ export const EventCard = ({
       </CardContent>
 
       <CardFooter className="p-6 pt-0">
-        <Button className="w-full gradient-primary text-white hover:shadow-glow">
-          Ver Detalhes
-        </Button>
+        <Link to={`/evento/${id}`} className="w-full">
+          <Button className="w-full gradient-primary text-white hover:shadow-glow">
+            Ver Detalhes
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
