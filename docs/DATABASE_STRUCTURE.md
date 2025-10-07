@@ -205,6 +205,7 @@ if (activity) {
 
 ## Relacionamentos
 
+### Generalizações/Especializações
 ```
 participants (1) ←→ (0..1) students
 participants (1) ←→ (0..1) professionals
@@ -217,3 +218,97 @@ activities (1) ←→ (0..1) workshops
 ```
 
 **Importante:** Cada registro na tabela de generalização pode ter no máximo **um** registro em **uma** das tabelas de especialização.
+
+### Relacionamentos Principais
+
+#### 1. **Evento tem Atividade (1:N)**
+```
+events (1) ──< (N) activities
+```
+- Cada evento pode ter múltiplas atividades
+- Cada atividade pertence a um único evento
+- FK: `activities.event_id` → `events.id`
+
+#### 2. **Participante faz Inscrição em Evento (N:N)**
+```
+participants (N) ──< enrollments >── (N) events
+```
+- Tabela de junção: `enrollments`
+- Atributos: `enrollment_date`, `enrollment_status`, `confirmation_code`
+- **Identificador composto**: `(participant_id, event_id)` - UNIQUE
+- Um participante pode se inscrever em vários eventos
+- Um evento pode ter vários participantes
+
+#### 3. **Inscrição possui Ingresso (1:1)**
+```
+enrollments (1) ──< (1) tickets
+```
+- FK: `enrollments.ticket_id` → `tickets.id`
+- Cada inscrição está associada a um tipo de ingresso
+
+#### 4. **Inscrição gera Pagamento (1:1)**
+```
+enrollments (1) ──< (1) payments
+```
+- FK: `payments.enrollment_id` → `enrollments.id` (UNIQUE)
+- Cada inscrição pode ter no máximo um pagamento
+- Cada pagamento está associado a uma única inscrição
+
+#### 5. **Palestrante ministra Atividade (N:N)**
+```
+speakers (N) ──< activity_speakers >── (N) activities
+```
+- Tabela de junção: `activity_speakers`
+- **PK composta**: `(activity_id, speaker_id)`
+- Um palestrante pode ministrar várias atividades
+- Uma atividade pode ter vários palestrantes
+
+#### 6. **Participante faz Avaliação de Atividade (N:N)**
+```
+participants (N) ──< evaluations >── (N) activities
+```
+- Tabela de junção: `evaluations`
+- Atributos: `rating`, `comment`, `evaluation_date`
+- **Identificador composto**: `(participant_id, activity_id)` - UNIQUE
+- Um participante pode avaliar várias atividades
+- Uma atividade pode ser avaliada por vários participantes
+- Um participante só pode avaliar uma atividade uma vez
+
+---
+
+## Diagrama de Relacionamentos
+
+```
+                    ┌─────────────┐
+                    │   EVENTS    │
+                    └──────┬──────┘
+                           │ 1
+                           │
+                           │ N
+                    ┌──────▼──────┐
+           ┌────────│ ACTIVITIES  │◄────────┐
+           │        └─────────────┘         │
+           │ N                            N │
+           │                                 │
+    ┌──────▼──────┐              ┌──────────▼─────┐
+    │  SPEAKERS   │              │ PARTICIPANTS   │
+    └──────┬──────┘              └────────┬───────┘
+           │                               │
+           │ 1                           1 │
+           │                               │
+    ┌──────▼──────────┐          ┌────────▼────────┐
+    │  SPECIALISTS    │          │    STUDENTS     │
+    │  CELEBRITIES    │          │  PROFESSIONALS  │
+    └─────────────────┘          └─────────────────┘
+           
+           
+    ┌─────────────┐       1:1      ┌──────────────┐
+    │ ENROLLMENTS │◄───────────────►│   TICKETS    │
+    └──────┬──────┘                 └──────────────┘
+           │
+           │ 1:1
+           │
+    ┌──────▼──────┐
+    │  PAYMENTS   │
+    └─────────────┘
+```
