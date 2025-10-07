@@ -1,8 +1,23 @@
 import { Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useEventSearch } from "@/hooks/useEventSearch";
+import { useState } from "react";
 
 export const Hero = () => {
+  const { setSearchTerm } = useEventSearch();
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchTerm(localSearchTerm);
+    // Scroll para a seção de eventos
+    const eventsSection = document.getElementById('eventos-section');
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/20 py-20 md:py-32">
       <div className="absolute inset-0 gradient-hero opacity-5"></div>
@@ -26,7 +41,7 @@ export const Hero = () => {
             Workshops, congressos, shows e palestras. Encontre e participe dos eventos que vão transformar sua carreira e expandir sua rede.
           </p>
 
-          <div className="w-full max-w-2xl">
+          <form onSubmit={handleSearch} className="w-full max-w-2xl">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -34,13 +49,19 @@ export const Hero = () => {
                   type="search"
                   placeholder="Buscar por evento, local ou categoria..."
                   className="pl-12 h-14 text-base"
+                  value={localSearchTerm}
+                  onChange={(e) => setLocalSearchTerm(e.target.value)}
                 />
               </div>
-              <Button size="lg" className="gradient-primary text-white h-14 px-8 hover:shadow-glow">
+              <Button 
+                type="submit"
+                size="lg" 
+                className="gradient-primary text-white h-14 px-8 hover:shadow-glow"
+              >
                 Buscar Eventos
               </Button>
             </div>
-          </div>
+          </form>
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">

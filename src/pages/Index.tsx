@@ -4,9 +4,15 @@ import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import eventureLogoUrl from "@/assets/eventure-logo.png";
+import { useEventSearch } from "@/hooks/useEventSearch";
+import { useMemo } from "react";
+import { X } from "lucide-react";
 
 const Index = () => {
+  const { searchTerm, setSearchTerm } = useEventSearch();
+  
   const { data: events, isLoading } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
@@ -20,19 +26,55 @@ const Index = () => {
     },
   });
 
+  // Filtrar eventos baseado no termo de busca
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+    if (!searchTerm.trim()) return events;
+
+    const lowerSearchTerm = searchTerm.toLowerCase().trim();
+    
+    return events.filter((event) => {
+      const matchName = event.name.toLowerCase().includes(lowerSearchTerm);
+      const matchDescription = event.description?.toLowerCase().includes(lowerSearchTerm);
+      const matchLocation = event.location?.toLowerCase().includes(lowerSearchTerm);
+      const matchType = event.event_type.toLowerCase().includes(lowerSearchTerm);
+      
+      return matchName || matchDescription || matchLocation || matchType;
+    });
+  }, [events, searchTerm]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <Hero />
       
       <main className="flex-1">
-        <section className="container py-16">
+        <section className="container py-16" id="eventos-section">
           <div className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Eventos em Destaque
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                {searchTerm 
+                  ? `Resultados para "${searchTerm}"` 
+                  : "Eventos em Destaque"
+                }
+              </h2>
+              {searchTerm && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSearchTerm('')}
+                  className="gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Limpar busca
+                </Button>
+              )}
+            </div>
             <p className="text-lg text-muted-foreground">
-              Descubra os eventos mais populares e comece sua jornada
+              {searchTerm 
+                ? `${filteredEvents.length} evento${filteredEvents.length !== 1 ? 's' : ''} encontrado${filteredEvents.length !== 1 ? 's' : ''}`
+                : "Descubra os eventos mais populares e comece sua jornada"
+              }
             </p>
           </div>
 
@@ -47,9 +89,9 @@ const Index = () => {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events?.map((event) => (
+              {filteredEvents.map((event) => (
                 <EventCard
                   key={event.id}
                   id={event.id}
@@ -62,6 +104,21 @@ const Index = () => {
                   imageUrl={event.image_url || undefined}
                 />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-xl text-muted-foreground mb-4">
+                Nenhum evento encontrado para "{searchTerm}"
+              </p>
+              <p className="text-muted-foreground mb-6">
+                Tente buscar por outros termos ou explore todos os eventos disponíveis
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => setSearchTerm('')}
+              >
+                Ver todos os eventos
+              </Button>
             </div>
           )}
         </section>
