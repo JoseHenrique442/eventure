@@ -1,16 +1,21 @@
-import { Menu, Search, X } from "lucide-react";
+import { Menu, Search, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import eventureLogoUrl from "@/assets/eventure-logo.png";
 import { useEventSearch } from "@/hooks/useEventSearch";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
   const { searchTerm, setSearchTerm } = useEventSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  const { user, signOut } = useAuth();
+  const { data: userRole } = useUserRole(user?.id);
 
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
@@ -42,15 +47,28 @@ export const Header = () => {
           </a>
 
           <nav className="hidden md:flex items-center gap-6">
-            <a href="/" className="text-sm font-medium transition-colors hover:text-primary">
+            <button 
+              onClick={() => navigate('/')} 
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               Eventos
-            </a>
-            <a href="#" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Criar Evento
-            </a>
-            <a href="#" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Meus Ingressos
-            </a>
+            </button>
+            {user && userRole === 'admin' && (
+              <button 
+                onClick={() => navigate('/criar-evento')} 
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Criar Evento
+              </button>
+            )}
+            {user && (
+              <button 
+                onClick={() => navigate('/meus-ingressos')} 
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Meus Ingressos
+              </button>
+            )}
           </nav>
         </div>
 
@@ -77,12 +95,49 @@ export const Header = () => {
             </div>
           </form>
 
-          <Button variant="outline" className="hidden md:flex">
-            Entrar
-          </Button>
-          <Button className="hidden md:flex gradient-primary text-white">
-            Cadastrar
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="hidden md:flex gap-2">
+                  <User className="h-4 w-4" />
+                  Minha Conta
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.email}</p>
+                    {userRole === 'admin' && (
+                      <p className="text-xs leading-none text-muted-foreground">Administrador</p>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/meus-ingressos')}>
+                  Meus Ingressos
+                </DropdownMenuItem>
+                {userRole === 'admin' && (
+                  <DropdownMenuItem onClick={() => navigate('/criar-evento')}>
+                    Criar Evento
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="outline" className="hidden md:flex" onClick={() => navigate('/auth')}>
+                Entrar
+              </Button>
+              <Button className="hidden md:flex gradient-primary text-primary-foreground" onClick={() => navigate('/auth')}>
+                Cadastrar
+              </Button>
+            </>
+          )}
 
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="w-6 h-6" />
