@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import EventDetails from "./pages/EventDetails";
 import Auth from "./pages/Auth";
 import MeusIngressos from "./pages/MeusIngressos";
+import CriarEvento from "./pages/CriarEvento";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/evento/:id" element={<EventDetails />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/meus-ingressos" element={<MeusIngressos />} />
+          <Route path="/criar-evento" element={<CriarEvento />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
