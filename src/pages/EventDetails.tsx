@@ -11,6 +11,9 @@ import { Calendar, MapPin, Clock, ArrowLeft, Users, BookOpen } from "lucide-reac
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useActivitiesWithDetails } from "@/hooks/useActivitiesWithDetails";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { CreateActivityDialog } from "@/components/CreateActivityDialog";
 
 const eventTypeLabels = {
   presencial: "Presencial",
@@ -26,6 +29,8 @@ const activityTypeLabels = {
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: userRole, isLoading: roleLoading } = useUserRole(user?.id);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["event", id],
@@ -42,7 +47,7 @@ const EventDetails = () => {
     enabled: !!id,
   });
 
-  const { data: activities, isLoading: activitiesLoading } = useActivitiesWithDetails(id);
+  const { data: activities, isLoading: activitiesLoading, refetch: refetchActivities } = useActivitiesWithDetails(id);
 
   const { data: tickets, isLoading: ticketsLoading } = useQuery({
     queryKey: ["tickets", id],
@@ -191,13 +196,23 @@ const EventDetails = () => {
               {/* Atividades */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    Programação
-                  </CardTitle>
-                  <CardDescription>
-                    Confira as atividades programadas para este evento
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Programação
+                      </CardTitle>
+                      <CardDescription>
+                        Confira as atividades programadas para este evento
+                      </CardDescription>
+                    </div>
+                    {!roleLoading && userRole === 'admin' && (
+                      <CreateActivityDialog 
+                        eventId={id!} 
+                        onSuccess={() => refetchActivities()} 
+                      />
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {activitiesLoading ? (
