@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import illustration404 from "@/assets/404-illustration.png";
+import illustration404 from "@/assets/404-astronaut.png";
 
 const NotFound = () => {
   const navigate = useNavigate();
