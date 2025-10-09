@@ -15,7 +15,7 @@ export const Header = () => {
   const location = useLocation();
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
   const { user, signOut } = useAuth();
-  const { data: userRole } = useUserRole(user?.id);
+  const { data: userRole, isLoading: roleLoading } = useUserRole(user?.id);
 
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
@@ -53,7 +53,7 @@ export const Header = () => {
             >
               Eventos
             </button>
-            {user && userRole === 'admin' && (
+            {user && !roleLoading && userRole === 'admin' && (
               <button 
                 onClick={() => navigate('/criar-evento')} 
                 className="text-sm font-medium transition-colors hover:text-primary"
@@ -107,7 +107,7 @@ export const Header = () => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.email}</p>
-                    {userRole === 'admin' && (
+                    {!roleLoading && userRole === 'admin' && (
                       <p className="text-xs leading-none text-muted-foreground">Administrador</p>
                     )}
                   </div>
@@ -116,7 +116,7 @@ export const Header = () => {
                 <DropdownMenuItem onClick={() => navigate('/meus-ingressos')}>
                   Meus Ingressos
                 </DropdownMenuItem>
-                {userRole === 'admin' && (
+                {!roleLoading && userRole === 'admin' && (
                   <DropdownMenuItem onClick={() => navigate('/criar-evento')}>
                     Criar Evento
                   </DropdownMenuItem>

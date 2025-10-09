@@ -68,7 +68,11 @@ export default function CriarEvento() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
-    } else if (!roleLoading && userRole !== 'admin') {
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!authLoading && user && !roleLoading && userRole !== 'admin') {
       toast({
         title: "Acesso negado",
         description: "Apenas administradores podem criar eventos",
