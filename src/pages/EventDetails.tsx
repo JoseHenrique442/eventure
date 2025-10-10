@@ -14,6 +14,8 @@ import { useActivitiesWithDetails } from "@/hooks/useActivitiesWithDetails";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { CreateActivityDialog } from "@/components/CreateActivityDialog";
+import { EnrollmentDialog } from "@/components/EnrollmentDialog";
+import { useEnrollments } from "@/hooks/useEnrollments";
 
 const eventTypeLabels = {
   presencial: "Presencial",
@@ -31,6 +33,10 @@ const EventDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: userRole, isLoading: roleLoading } = useUserRole(user?.id);
+  const { data: enrollments, refetch: refetchEnrollments } = useEnrollments(user?.id);
+
+  // Verificar se o usuário já está inscrito neste evento
+  const isEnrolled = enrollments?.some(enrollment => enrollment.event.id === id);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["event", id],
@@ -371,9 +377,30 @@ const EventDetails = () => {
                         </div>
                       ))}
                       <Separator />
-                      <Button className="w-full gradient-primary text-white" size="lg">
-                        Inscrever-se no Evento
-                      </Button>
+                      {!user ? (
+                        <Button 
+                          className="w-full gradient-primary text-white" 
+                          size="lg"
+                          onClick={() => navigate('/auth')}
+                        >
+                          Fazer Login para Inscrever-se
+                        </Button>
+                      ) : isEnrolled ? (
+                        <Button 
+                          variant="secondary"
+                          className="w-full" 
+                          size="lg"
+                          onClick={() => navigate('/meus-ingressos')}
+                        >
+                          Ver Meu Ingresso
+                        </Button>
+                      ) : tickets && tickets.length > 0 && (
+                        <EnrollmentDialog 
+                          eventId={id!} 
+                          ticketId={tickets[0].id}
+                          onSuccess={() => refetchEnrollments()}
+                        />
+                      )}
                     </div>
                   ) : (
                     <p className="text-muted-foreground text-center py-4">
