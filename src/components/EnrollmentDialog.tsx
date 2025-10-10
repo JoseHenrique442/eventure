@@ -128,24 +128,41 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
         }
       }
 
-      // Criar inscrição
+      // Buscar informações do ingresso
+      const { data: ticket, error: ticketError } = await supabase
+        .from("tickets")
+        .select("price")
+        .eq("id", ticketId)
+        .single();
+
+      if (ticketError) throw ticketError;
+
+      // Criar inscrição com status pendente
       const confirmationCode = `${eventId.substring(0, 8)}-${Date.now()}`.toUpperCase();
       
-      const { error: enrollmentError } = await supabase
+      const { data: enrollmentData, error: enrollmentError } = await supabase
         .from("enrollments")
-        .insert({
+        .insert([{
           participant_id: participantId,
           event_id: eventId,
           ticket_id: ticketId,
           confirmation_code: confirmationCode,
-          enrollment_status: "confirmada",
-        });
+          enrollment_status: "pendente" as const,
+        }])
+        .select()
+        .single();
 
       if (enrollmentError) throw enrollmentError;
 
-      toast.success("Inscrição realizada com sucesso!");
+      toast.success("Dados salvos! Redirecionando para o checkout...");
       setOpen(false);
       form.reset();
+      
+      // Redirecionar para checkout
+      setTimeout(() => {
+        window.location.href = `/checkout/${enrollmentData.id}?price=${ticket.price}`;
+      }, 500);
+      
       onSuccess?.();
     } catch (error: any) {
       console.error("Erro ao realizar inscrição:", error);
