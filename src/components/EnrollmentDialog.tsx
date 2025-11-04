@@ -28,6 +28,9 @@ import { toast } from "sonner";
 import { Loader2, Ticket } from "lucide-react";
 
 const formSchema = z.object({
+  ticket_id: z.string({
+    required_error: "Selecione um tipo de ingresso",
+  }),
   full_name: z.string().min(3, "Nome completo deve ter no mínimo 3 caracteres"),
   email: z.string().email("Email inválido"),
   phone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
@@ -48,13 +51,21 @@ const formSchema = z.object({
   path: ["instituicao_ensino"],
 });
 
+interface Ticket {
+  id: string;
+  ticket_type: string;
+  price: number;
+  description: string | null;
+  quantity_available: number;
+}
+
 interface EnrollmentDialogProps {
   eventId: string;
-  ticketId: string;
+  tickets: Ticket[];
   onSuccess?: () => void;
 }
 
-export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDialogProps) {
+export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
@@ -63,6 +74,7 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      ticket_id: "",
       full_name: existingProfile?.full_name || "",
       email: existingProfile?.email || user?.email || "",
       phone: existingProfile?.phone || "",
@@ -128,14 +140,11 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
         }
       }
 
-      // Buscar informações do ingresso
-      const { data: ticket, error: ticketError } = await supabase
-        .from("tickets")
-        .select("price")
-        .eq("id", ticketId)
-        .single();
-
-      if (ticketError) throw ticketError;
+      // Buscar informações do ingresso selecionado
+      const selectedTicket = tickets.find(t => t.id === values.ticket_id);
+      if (!selectedTicket) {
+        throw new Error("Ingresso não encontrado");
+      }
 
       // Criar inscrição com status pendente
       const confirmationCode = `${eventId.substring(0, 8)}-${Date.now()}`.toUpperCase();
@@ -145,7 +154,7 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
         .insert([{
           participant_id: participantId,
           event_id: eventId,
-          ticket_id: ticketId,
+          ticket_id: values.ticket_id,
           confirmation_code: confirmationCode,
           enrollment_status: "pendente" as const,
         }])
@@ -160,7 +169,7 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
       
       // Redirecionar para checkout
       setTimeout(() => {
-        window.location.href = `/checkout/${enrollmentData.id}?price=${ticket.price}`;
+        window.location.href = `/checkout/${enrollmentData.id}?price=${selectedTicket.price}`;
       }, 500);
       
       onSuccess?.();
@@ -195,6 +204,54 @@ export function EnrollmentDialog({ eventId, ticketId, onSuccess }: EnrollmentDia
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="ticket_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Ingresso *</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="flex flex-col space-y-3"
+                      >
+                        {tickets.map((ticket) => (
+                          <FormItem 
+                            key={ticket.id}
+                            className="flex items-center space-x-3 space-y-0 border rounded-lg p-4 hover:border-primary transition-colors"
+                          >
+                            <FormControl>
+                              <RadioGroupItem value={ticket.id} />
+                            </FormControl>
+                            <div className="flex-1">
+                              <FormLabel className="font-semibold capitalize cursor-pointer">
+                                {ticket.ticket_type}
+                              </FormLabel>
+                              {ticket.description && (
+                                <p className="text-sm text-muted-foreground">
+                                  {ticket.description}
+                                </p>
+                              )}
+                              <p className="text-sm font-bold mt-1">
+                                {Number(ticket.price) === 0 
+                                  ? "Grátis" 
+                                  : `R$ ${Number(ticket.price).toFixed(2)}`
+                                }
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {ticket.quantity_available} disponíveis
+                              </p>
+                            </div>
+                          </FormItem>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="full_name"

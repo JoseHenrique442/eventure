@@ -397,7 +397,7 @@ const EventDetails = () => {
                       ) : tickets && tickets.length > 0 && (
                         <EnrollmentDialog 
                           eventId={id!} 
-                          ticketId={tickets[0].id}
+                          tickets={tickets}
                           onSuccess={() => refetchEnrollments()}
                         />
                       )}
