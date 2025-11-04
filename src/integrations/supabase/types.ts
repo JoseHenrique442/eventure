@@ -647,7 +647,7 @@ export type Database = {
     Enums: {
       activity_type: "palestra" | "oficina" | "mesa_redonda"
       app_role: "admin" | "user"
-      enrollment_status: "confirmada" | "cancelada"
+      enrollment_status: "confirmada" | "cancelada" | "pendente"
       event_type: "presencial" | "online" | "hibrido"
       participant_type: "estudante" | "profissional" | "vip"
       payment_method: "cartao_credito" | "cartao_debito" | "pix" | "boleto"
@@ -782,7 +782,7 @@ export const Constants = {
     Enums: {
       activity_type: ["palestra", "oficina", "mesa_redonda"],
       app_role: ["admin", "user"],
-      enrollment_status: ["confirmada", "cancelada"],
+      enrollment_status: ["confirmada", "cancelada", "pendente"],
       event_type: ["presencial", "online", "hibrido"],
       participant_type: ["estudante", "profissional", "vip"],
       payment_method: ["cartao_credito", "cartao_debito", "pix", "boleto"],

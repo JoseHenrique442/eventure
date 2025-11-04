@@ -35,6 +35,13 @@ const eventFormSchema = z.object({
     required_error: "A data de término é obrigatória",
   }),
   image_url: z.string().url({ message: "URL da imagem inválida" }).optional().or(z.literal("")),
+  // Preços dos ingressos
+  price_meia: z.coerce.number().min(0, { message: "Preço deve ser maior ou igual a 0" }),
+  quantity_meia: z.coerce.number().int().min(1, { message: "Quantidade deve ser maior que 0" }),
+  price_inteira: z.coerce.number().min(0, { message: "Preço deve ser maior ou igual a 0" }),
+  quantity_inteira: z.coerce.number().int().min(1, { message: "Quantidade deve ser maior que 0" }),
+  price_vip: z.coerce.number().min(0, { message: "Preço deve ser maior ou igual a 0" }),
+  quantity_vip: z.coerce.number().int().min(1, { message: "Quantidade deve ser maior que 0" }),
 }).refine((data) => data.end_date >= data.start_date, {
   message: "A data de término deve ser posterior à data de início",
   path: ["end_date"],
@@ -62,6 +69,12 @@ export default function CriarEvento() {
       description: "",
       location: "",
       image_url: "",
+      price_meia: 0,
+      quantity_meia: 50,
+      price_inteira: 0,
+      quantity_inteira: 50,
+      price_vip: 0,
+      quantity_vip: 20,
     },
   });
 
@@ -86,7 +99,7 @@ export default function CriarEvento() {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase
+      const { data: eventData, error: eventError } = await supabase
         .from('events')
         .insert({
           name: values.name,
@@ -101,14 +114,45 @@ export default function CriarEvento() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (eventError) throw eventError;
+
+      // Criar os ingressos para o evento
+      const ticketsToInsert = [
+        {
+          event_id: eventData.id,
+          ticket_type: 'meia' as const,
+          price: values.price_meia,
+          quantity_available: values.quantity_meia,
+          description: 'Ingresso meia-entrada',
+        },
+        {
+          event_id: eventData.id,
+          ticket_type: 'inteira' as const,
+          price: values.price_inteira,
+          quantity_available: values.quantity_inteira,
+          description: 'Ingresso entrada inteira',
+        },
+        {
+          event_id: eventData.id,
+          ticket_type: 'vip' as const,
+          price: values.price_vip,
+          quantity_available: values.quantity_vip,
+          description: 'Ingresso VIP com acesso a áreas exclusivas',
+        },
+      ];
+
+      const { error: ticketsError } = await supabase
+        .from('tickets')
+        .insert(ticketsToInsert);
+
+      if (ticketsError) throw ticketsError;
 
       toast({
         title: "Evento criado com sucesso!",
-        description: "O evento foi criado e já está disponível na plataforma.",
+        description: "O evento e os ingressos foram criados e já estão disponíveis na plataforma.",
       });
 
-      navigate(`/evento/${data.id}`);
+      navigate(`/evento/${eventData.id}`);
     } catch (error: any) {
       toast({
         title: "Erro ao criar evento",
@@ -326,6 +370,103 @@ export default function CriarEvento() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Ingressos</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Configure os preços e quantidades disponíveis para cada tipo de ingresso
+                    </p>
+
+                    {/* Ingresso Meia */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                      <FormField
+                        control={form.control}
+                        name="price_meia"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Preço Meia-Entrada (R$)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="quantity_meia"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Quantidade Disponível</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" placeholder="50" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Ingresso Inteira */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                      <FormField
+                        control={form.control}
+                        name="price_inteira"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Preço Entrada Inteira (R$)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="quantity_inteira"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Quantidade Disponível</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" placeholder="50" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Ingresso VIP */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                      <FormField
+                        control={form.control}
+                        name="price_vip"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Preço VIP (R$)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="quantity_vip"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Quantidade Disponível</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" placeholder="20" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <div className="flex gap-4">
                     <Button 
