@@ -58,6 +58,49 @@ export type Database = {
           },
         ]
       }
+      activity_enrollments: {
+        Row: {
+          activity_id: string
+          created_at: string | null
+          enrollment_id: string
+          id: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string | null
+          enrollment_id: string
+          id?: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string | null
+          enrollment_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_enrollments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_enrollments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities_ranking"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_enrollments_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_speakers: {
         Row: {
           activity_id: string
@@ -77,6 +120,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_speakers_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities_ranking"
             referencedColumns: ["id"]
           },
           {
@@ -273,6 +323,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "evaluations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities_ranking"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "evaluations_participant_id_fkey"
             columns: ["participant_id"]
             isOneToOne: false
@@ -348,6 +405,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: true
             referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lectures_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: true
+            referencedRelation: "activities_ranking"
             referencedColumns: ["id"]
           },
         ]
@@ -629,11 +693,26 @@ export type Database = {
             referencedRelation: "activities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "workshops_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: true
+            referencedRelation: "activities_ranking"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      activities_ranking: {
+        Row: {
+          id: string | null
+          media_notas: number | null
+          title: string | null
+          total_avaliacoes: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

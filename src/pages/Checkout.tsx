@@ -89,6 +89,7 @@ const Checkout = () => {
       const price = Number(ticketPrice || enrollment.tickets?.price || 0);
 
       // Criar registro de pagamento
+      // O trigger 'payment_confirmation_trigger' atualizará automaticamente o status da inscrição
       const { error: paymentError } = await supabase
         .from("payments")
         .insert({
@@ -99,14 +100,6 @@ const Checkout = () => {
         });
 
       if (paymentError) throw paymentError;
-
-      // Atualizar status da inscrição para confirmada
-      const { error: enrollmentError } = await supabase
-        .from("enrollments")
-        .update({ enrollment_status: "confirmada" })
-        .eq("id", enrollmentId);
-
-      if (enrollmentError) throw enrollmentError;
     },
     onSuccess: () => {
       setPaymentProcessing(true);

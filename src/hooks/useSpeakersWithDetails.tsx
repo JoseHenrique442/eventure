@@ -16,11 +16,11 @@ export interface SpeakerWithDetails {
   };
 }
 
-export const useSpeakersWithDetails = () => {
+export const useSpeakersWithDetails = (filterSpecialists: boolean = false) => {
   return useQuery({
-    queryKey: ['speakers-with-details'],
+    queryKey: ['speakers-with-details', filterSpecialists],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('speakers')
         .select(`
           *,
@@ -31,6 +31,13 @@ export const useSpeakersWithDetails = () => {
             area_fama
           )
         `);
+
+      // Se filtrar por especialistas, incluir apenas aqueles com atividades
+      if (filterSpecialists) {
+        query = query.eq('speaker_type', 'especialista');
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
