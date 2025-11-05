@@ -722,6 +722,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      purchase_ticket: {
+        Args: {
+          p_amount: number
+          p_event_id: string
+          p_participant_id: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_ticket_id: string
+        }
+        Returns: {
+          confirmation_code: string
+          enrollment_id: string
+          payment_id: string
+        }[]
+      }
     }
     Enums: {
       activity_type: "palestra" | "oficina" | "mesa_redonda"
