@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { eventsApi } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
@@ -15,15 +15,7 @@ const Index = () => {
   
   const { data: events, isLoading } = useQuery({
     queryKey: ["events"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("start_date", { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => eventsApi.getAll(),
   });
 
   // Filtrar eventos baseado no termo de busca

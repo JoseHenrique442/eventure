@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { participantsApi, enrollmentsApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useParticipantProfile } from "@/hooks/useParticipantProfile";
 import { Button } from "@/components/ui/button";
@@ -101,43 +101,28 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
 
       // Se não existe perfil, criar um novo
       if (!participantId) {
-        const { data: participant, error: participantError } = await supabase
-          .from("participants")
-          .insert({
-            user_id: user.id,
-            full_name: values.full_name,
-            email: values.email,
-            phone: values.phone,
-            participant_type: values.participant_type,
-          })
-          .select()
-          .single();
+        const participantData: any = {
+          full_name: values.full_name,
+          email: values.email,
+          phone: values.phone,
+          participant_type: values.participant_type,
+        };
 
-        if (participantError) throw participantError;
-        participantId = participant.id;
-
-        // Criar registro de especialização
+        // Adicionar dados específicos baseado no tipo
         if (values.participant_type === "estudante") {
-          const { error: studentError } = await supabase
-            .from("students")
-            .insert({
-              participant_id: participantId,
-              instituicao_ensino: values.instituicao_ensino || null,
-              matricula: values.matricula || null,
-            });
-
-          if (studentError) throw studentError;
+          participantData.student = {
+            instituicao_ensino: values.instituicao_ensino || null,
+            matricula: values.matricula || null,
+          };
         } else {
-          const { error: professionalError } = await supabase
-            .from("professionals")
-            .insert({
-              participant_id: participantId,
-              empresa: values.empresa || null,
-              cargo: values.cargo || null,
-            });
-
-          if (professionalError) throw professionalError;
+          participantData.professional = {
+            empresa: values.empresa || null,
+            cargo: values.cargo || null,
+          };
         }
+
+        const participant = await participantsApi.create(participantData);
+        participantId = participant.id;
       }
 
       // Buscar informações do ingresso selecionado
@@ -146,22 +131,12 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
         throw new Error("Ingresso não encontrado");
       }
 
-      // Criar inscrição com status pendente
-      const confirmationCode = `${eventId.substring(0, 8)}-${Date.now()}`.toUpperCase();
-      
-      const { data: enrollmentData, error: enrollmentError } = await supabase
-        .from("enrollments")
-        .insert([{
-          participant_id: participantId,
-          event_id: eventId,
-          ticket_id: values.ticket_id,
-          confirmation_code: confirmationCode,
-          enrollment_status: "pendente" as const,
-        }])
-        .select()
-        .single();
-
-      if (enrollmentError) throw enrollmentError;
+      // Criar inscrição via API
+      const enrollmentData = await enrollmentsApi.create({
+        participant_id: participantId,
+        event_id: eventId,
+        ticket_id: values.ticket_id,
+      });
 
       toast.success("Dados salvos! Redirecionando para o checkout...");
       setOpen(false);

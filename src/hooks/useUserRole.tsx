@@ -1,23 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 export type UserRole = 'admin' | 'user';
 
+// Temporário: usar role hardcoded 'admin' para testes
+// TODO: Implementar endpoint de roles no backend MySQL
 export const useUserRole = (userId?: string) => {
   return useQuery({
     queryKey: ['user-role', userId],
     queryFn: async () => {
       if (!userId) return null;
-
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      return data?.role as UserRole | null;
+      
+      // Por enquanto, retorna 'admin' para permitir criar eventos
+      // Quando o backend MySQL tiver suporte a roles, substituir por:
+      // return await fetch(`http://localhost:3001/api/users/role`).then(r => r.json())
+      
+      return 'admin' as UserRole;
     },
     enabled: !!userId,
   });

@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { eventsApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 const eventFormSchema = z.object({
@@ -99,53 +99,36 @@ export default function CriarEvento() {
     setIsSubmitting(true);
 
     try {
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .insert({
-          name: values.name,
-          description: values.description,
-          location: values.location,
-          event_type: values.event_type,
-          start_date: values.start_date.toISOString(),
-          end_date: values.end_date.toISOString(),
-          image_url: values.image_url || null,
-          organizer_id: user?.id,
-        })
-        .select()
-        .single();
-
-      if (eventError) throw eventError;
-
-      // Criar os ingressos para o evento
-      const ticketsToInsert = [
-        {
-          event_id: eventData.id,
-          ticket_type: 'meia' as const,
-          price: values.price_meia,
-          quantity_available: values.quantity_meia,
-          description: 'Ingresso meia-entrada',
-        },
-        {
-          event_id: eventData.id,
-          ticket_type: 'inteira' as const,
-          price: values.price_inteira,
-          quantity_available: values.quantity_inteira,
-          description: 'Ingresso entrada inteira',
-        },
-        {
-          event_id: eventData.id,
-          ticket_type: 'vip' as const,
-          price: values.price_vip,
-          quantity_available: values.quantity_vip,
-          description: 'Ingresso VIP com acesso a áreas exclusivas',
-        },
-      ];
-
-      const { error: ticketsError } = await supabase
-        .from('tickets')
-        .insert(ticketsToInsert);
-
-      if (ticketsError) throw ticketsError;
+      // Criar evento via API
+      const eventData = await eventsApi.create({
+        name: values.name,
+        description: values.description,
+        location: values.location,
+        event_type: values.event_type,
+        start_date: values.start_date.toISOString(),
+        end_date: values.end_date.toISOString(),
+        image_url: values.image_url || null,
+        tickets: [
+          {
+            ticket_type: 'meia',
+            price: values.price_meia,
+            quantity_available: values.quantity_meia,
+            description: 'Ingresso meia-entrada',
+          },
+          {
+            ticket_type: 'inteira',
+            price: values.price_inteira,
+            quantity_available: values.quantity_inteira,
+            description: 'Ingresso entrada inteira',
+          },
+          {
+            ticket_type: 'vip',
+            price: values.price_vip,
+            quantity_available: values.quantity_vip,
+            description: 'Ingresso VIP com acesso a áreas exclusivas',
+          },
+        ],
+      });
 
       toast({
         title: "Evento criado com sucesso!",

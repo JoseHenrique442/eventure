@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { paymentsApi } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,58 +29,25 @@ const Checkout = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const { data: enrollment, isLoading } = useQuery({
+  const { data: enrollmentData, isLoading } = useQuery({
     queryKey: ["enrollment", enrollmentId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select(`
-          *,
-          events (
-            id,
-            name,
-            description,
-            start_date,
-            end_date,
-            location,
-            image_url,
-            event_type
-          ),
-          tickets (
-            id,
-            ticket_type,
-            price,
-            description
-          ),
-          participants (
-            id,
-            full_name,
-            email
-          )
-        `)
-        .eq("id", enrollmentId)
-        .single();
-
-      if (error) throw error;
-      return data;
+      const response = await fetch(`http://localhost:3001/api/enrollments/${enrollmentId}`);
+      if (!response.ok) throw new Error("Falha ao buscar inscrição");
+      return response.json();
     },
     enabled: !!enrollmentId && !!user,
   });
 
-  const { data: existingPayment } = useQuery({
-    queryKey: ["payment", enrollmentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("payments")
-        .select("*")
-        .eq("enrollment_id", enrollmentId)
-        .maybeSingle();
+  // Adaptar estrutura de dados
+  const enrollment = enrollmentData ? {
+    ...enrollmentData,
+    events: enrollmentData.event,
+    tickets: enrollmentData.ticket,
+    participants: enrollmentData.participant,
+  } : null;
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!enrollmentId,
-  });
+  const existingPayment = enrollmentData?.payment || null;
 
   const confirmPaymentMutation = useMutation({
     mutationFn: async () => {
@@ -88,18 +55,13 @@ const Checkout = () => {
 
       const price = Number(ticketPrice || enrollment.tickets?.price || 0);
 
-      // Criar registro de pagamento
-      // O trigger 'payment_confirmation_trigger' atualizará automaticamente o status da inscrição
-      const { error: paymentError } = await supabase
-        .from("payments")
-        .insert({
-          enrollment_id: enrollmentId!,
-          amount: price,
-          payment_method: "pix",
-          payment_status: "confirmado",
-        });
-
-      if (paymentError) throw paymentError;
+      // Criar registro de pagamento via API
+      await paymentsApi.create({
+        enrollment_id: enrollmentId!,
+        amount: price,
+        payment_method: "pix",
+        payment_status: "confirmado",
+      });
     },
     onSuccess: () => {
       setPaymentProcessing(true);

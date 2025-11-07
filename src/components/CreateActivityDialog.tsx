@@ -5,7 +5,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar, CalendarIcon, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { activitiesApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -61,19 +61,15 @@ export function CreateActivityDialog({ eventId, onSuccess }: CreateActivityDialo
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('activities')
-        .insert({
-          event_id: eventId,
-          title: values.title,
-          description: values.description || null,
-          activity_type: values.activity_type,
-          activity_date: values.activity_date.toISOString(),
-          duration: values.duration,
-          location: values.location || null,
-        });
-
-      if (error) throw error;
+      await activitiesApi.create({
+        event_id: eventId,
+        title: values.title,
+        description: values.description || null,
+        activity_type: values.activity_type,
+        activity_date: values.activity_date.toISOString(),
+        duration: values.duration,
+        location: values.location || null,
+      });
 
       toast({
         title: "Atividade criada com sucesso!",

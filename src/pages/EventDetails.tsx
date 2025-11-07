@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { eventsApi, ticketsApi, speakersApi } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,16 +40,7 @@ const EventDetails = () => {
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["event", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => eventsApi.getById(id!),
     enabled: !!id,
   });
 
@@ -57,43 +48,25 @@ const EventDetails = () => {
 
   const { data: tickets, isLoading: ticketsLoading } = useQuery({
     queryKey: ["tickets", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tickets")
-        .select("*")
-        .eq("event_id", id);
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => ticketsApi.getByEvent(id!),
     enabled: !!id,
   });
 
   // Buscar palestrantes das atividades
   const { data: speakers } = useQuery({
-    queryKey: ["event-speakers", id],
+    queryKey: ["event-speakers", activities],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("activity_speakers")
-        .select(`
-          speaker_id,
-          speakers (
-            id,
-            name,
-            bio,
-            photo_url,
-            speaker_type,
-            specialists (area_atuacao),
-            celebrities (area_fama)
-          )
-        `)
-        .in("activity_id", activities?.map(a => a.id) || []);
-
-      if (error) throw error;
+      if (!activities || activities.length === 0) return [];
+      
+      const speakersPromises = activities.map(activity => 
+        speakersApi.getByActivity(activity.id)
+      );
+      
+      const allSpeakers = await Promise.all(speakersPromises);
       
       // Remover duplicatas
       const uniqueSpeakers = Array.from(
-        new Map(data.map(item => [item.speakers.id, item.speakers])).values()
+        new Map(allSpeakers.flat().map(speaker => [speaker.id, speaker])).values()
       );
       
       return uniqueSpeakers;

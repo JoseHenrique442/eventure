@@ -10,13 +10,22 @@ router.get('/my-enrollments', authenticateUser, async (req: AuthRequest, res) =>
     const enrollments = await query(`
       SELECT 
         e.*,
-        ev.name as event_name,
-        ev.start_date,
-        ev.end_date,
-        ev.location as event_location,
-        ev.image_url as event_image,
-        t.ticket_type,
-        t.price
+        JSON_OBJECT(
+          'id', ev.id,
+          'name', ev.name,
+          'description', ev.description,
+          'start_date', ev.start_date,
+          'end_date', ev.end_date,
+          'location', ev.location,
+          'image_url', ev.image_url,
+          'event_type', ev.event_type
+        ) as event,
+        JSON_OBJECT(
+          'id', t.id,
+          'ticket_type', t.ticket_type,
+          'price', t.price,
+          'description', t.description
+        ) as ticket
       FROM enrollments e
       INNER JOIN participants p ON e.participant_id = p.id
       INNER JOIN events ev ON e.event_id = ev.id
@@ -26,6 +35,56 @@ router.get('/my-enrollments', authenticateUser, async (req: AuthRequest, res) =>
     `, [req.userId]);
     
     res.json(enrollments);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET enrollment by ID with full details
+router.get('/:id', authenticateUser, async (req: AuthRequest, res) => {
+  try {
+    const [enrollment] = await query(`
+      SELECT 
+        e.*,
+        JSON_OBJECT(
+          'id', ev.id,
+          'name', ev.name,
+          'description', ev.description,
+          'start_date', ev.start_date,
+          'end_date', ev.end_date,
+          'location', ev.location,
+          'image_url', ev.image_url,
+          'event_type', ev.event_type
+        ) as event,
+        JSON_OBJECT(
+          'id', t.id,
+          'ticket_type', t.ticket_type,
+          'price', t.price,
+          'description', t.description
+        ) as ticket,
+        JSON_OBJECT(
+          'id', p.id,
+          'full_name', p.full_name,
+          'email', p.email
+        ) as participant,
+        JSON_OBJECT(
+          'payment_status', pay.payment_status,
+          'amount', pay.amount,
+          'payment_date', pay.payment_date
+        ) as payment
+      FROM enrollments e
+      INNER JOIN participants p ON e.participant_id = p.id
+      INNER JOIN events ev ON e.event_id = ev.id
+      LEFT JOIN tickets t ON e.ticket_id = t.id
+      LEFT JOIN payments pay ON e.id = pay.enrollment_id
+      WHERE e.id = ?
+    `, [req.params.id]);
+    
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+    
+    res.json(enrollment);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

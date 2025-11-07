@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { activitiesApi } from "@/lib/api";
 
 export interface ActivityWithDetails {
   id: string;
@@ -23,29 +23,6 @@ export interface ActivityWithDetails {
 export const useActivitiesWithDetails = (eventId?: string) => {
   return useQuery({
     queryKey: ['activities-with-details', eventId],
-    queryFn: async () => {
-      let query = supabase
-        .from('activities')
-        .select(`
-          *,
-          lectures (
-            tema
-          ),
-          workshops (
-            instrutor,
-            vagas
-          )
-        `);
-      
-      if (eventId) {
-        query = query.eq('event_id', eventId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      return data as ActivityWithDetails[];
-    },
+    queryFn: () => activitiesApi.getWithDetails(eventId),
   });
 };

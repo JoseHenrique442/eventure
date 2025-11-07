@@ -1,5 +1,6 @@
 import express from 'express';
 import { query } from '../config/database';
+import { authenticateUser } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -62,11 +63,38 @@ router.get('/ranking', async (req, res) => {
 // GET activities by event
 router.get('/by-event/:eventId', async (req, res) => {
   try {
-    const activities = await query(
-      'SELECT * FROM activities WHERE event_id = ? ORDER BY activity_date ASC',
-      [req.params.eventId]
-    );
+    const sql = `
+      SELECT 
+        a.*,
+        l.tema as lecture_tema,
+        w.instrutor as workshop_instrutor,
+        w.vagas as workshop_vagas
+      FROM activities a
+      LEFT JOIN lectures l ON a.id = l.activity_id
+      LEFT JOIN workshops w ON a.id = w.activity_id
+      WHERE a.event_id = ?
+      ORDER BY a.activity_date ASC
+    `;
+    
+    const activities = await query(sql, [req.params.eventId]);
     res.json(activities);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST create activity (requires auth)
+router.post('/', authenticateUser, async (req, res) => {
+  try {
+    const { event_id, title, description, activity_type, activity_date, duration, location } = req.body;
+    
+    const result = await query(
+      `INSERT INTO activities (event_id, title, description, activity_type, activity_date, duration, location)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [event_id, title, description, activity_type, activity_date, duration, location]
+    );
+    
+    res.json({ id: result.insertId, message: 'Activity created successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
