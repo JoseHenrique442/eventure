@@ -80,7 +80,7 @@ BEGIN
   COMMIT;
 END$$
 
--- Trigger: validate_workshop_capacity
+-- Trigger: validate_workshop_capacity (corrigido para activity_enrollments)
 DROP TRIGGER IF EXISTS validate_workshop_capacity_before_insert$$
 
 CREATE TRIGGER validate_workshop_capacity_before_insert
