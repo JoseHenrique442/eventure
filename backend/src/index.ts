@@ -15,13 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+app.use(cors());
 app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://14d7699f-5e37-4b4c-b382-5f166e15c285.lovableproject.com',
-    /\.lovableproject\.com$/,
-    /\.lovable\.app$/
+    'http://localhost:3001',
   ],
   credentials: true
 }));

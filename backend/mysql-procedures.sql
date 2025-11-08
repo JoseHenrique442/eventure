@@ -84,7 +84,7 @@ END$$
 DROP TRIGGER IF EXISTS validate_workshop_capacity_before_insert$$
 
 CREATE TRIGGER validate_workshop_capacity_before_insert
-BEFORE INSERT ON activity_enrollments
+BEFORE INSERT ON enrollments
 FOR EACH ROW
 BEGIN
   DECLARE workshop_vagas INT;
@@ -98,7 +98,7 @@ BEGIN
   IF workshop_vagas IS NOT NULL THEN
     -- Contar inscrições atuais
     SELECT COUNT(*) INTO current_enrollments
-    FROM activity_enrollments
+    FROM enrollments
     WHERE activity_id = NEW.activity_id;
     
     -- Validar capacidade
