@@ -8,8 +8,10 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const events = await query('SELECT * FROM events ORDER BY start_date DESC');
+    console.log('Events fetched:', events);
     res.json(events);
   } catch (error: any) {
+    console.error('Error fetching events:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -47,12 +49,15 @@ router.get('/with-celebrities', async (req, res) => {
 // GET single event by ID
 router.get('/:id', async (req, res) => {
   try {
+    console.log('Fetching event with ID:', req.params.id);
     const [event] = await query('SELECT * FROM events WHERE id = ?', [req.params.id]) as any[];
+    console.log('Event found:', event);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
     res.json(event);
   } catch (error: any) {
+    console.error('Error fetching event:', error);
     res.status(500).json({ error: error.message });
   }
 });

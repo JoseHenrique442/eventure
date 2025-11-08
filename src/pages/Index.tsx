@@ -18,6 +18,8 @@ const Index = () => {
     queryFn: () => eventsApi.getAll(),
   });
 
+  console.log('Events from API:', events);
+
   // Filtrar eventos baseado no termo de busca
   const filteredEvents = useMemo(() => {
     if (!events) return [];
