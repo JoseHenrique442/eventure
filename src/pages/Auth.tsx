@@ -105,7 +105,7 @@ export default function Auth() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="seu@email.com" {...field} />
+                            <Input data-testid="signin-email" type="email" placeholder="seu@email.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -118,13 +118,13 @@ export default function Auth() {
                         <FormItem>
                           <FormLabel>Senha</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
+                            <Input data-testid="signin-password" type="password" placeholder="••••••" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button data-testid="signin-submit" type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? 'Entrando...' : 'Entrar'}
                     </Button>
                   </form>

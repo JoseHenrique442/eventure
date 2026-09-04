@@ -8,20 +8,24 @@ import participantsRouter from './routes/participants';
 import ticketsRouter from './routes/tickets';
 import speakersRouter from './routes/speakers';
 import paymentsRouter from './routes/payments';
+import authRouter from './routes/auth';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const configuredOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Middleware
-app.use(cors());
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:3001',
-  ],
+  origin: (origin, callback) => {
+    const isLocalDevelopment = !origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+    if (isLocalDevelopment || configuredOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -32,6 +36,7 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/enrollments', enrollmentsRouter);
 app.use('/api/activities', activitiesRouter);

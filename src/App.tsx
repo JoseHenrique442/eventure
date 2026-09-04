@@ -10,6 +10,7 @@ import MeusIngressos from "./pages/MeusIngressos";
 import CriarEvento from "./pages/CriarEvento";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 
@@ -18,8 +19,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/evento/:id" element={<EventDetails />} />
           <Route path="/auth" element={<Auth />} />
@@ -28,8 +30,9 @@ const App = () => (
           <Route path="/checkout/:enrollmentId" element={<Checkout />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

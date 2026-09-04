@@ -98,7 +98,7 @@ export const Header = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="hidden md:flex gap-2">
+                <Button data-testid="account-menu" variant="outline" className="hidden md:flex gap-2">
                   <User className="h-4 w-4" />
                   Minha Conta
                 </Button>

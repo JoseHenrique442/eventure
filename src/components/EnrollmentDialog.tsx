@@ -194,6 +194,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
                         {tickets.map((ticket) => (
                           <FormItem 
                             key={ticket.id}
+                            data-testid="ticket-option"
                             className="flex items-center space-x-3 space-y-0 border rounded-lg p-4 hover:border-primary transition-colors"
                           >
                             <FormControl>
@@ -234,7 +235,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
                   <FormItem>
                     <FormLabel>Nome Completo *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Seu nome completo" {...field} />
+                      <Input data-testid="enrollment-full-name" placeholder="Seu nome completo" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,7 +249,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
                   <FormItem>
                     <FormLabel>Email *</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="seu@email.com" {...field} />
+                      <Input data-testid="enrollment-email" type="email" placeholder="seu@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -262,7 +263,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
                   <FormItem>
                     <FormLabel>Telefone *</FormLabel>
                     <FormControl>
-                      <Input placeholder="(00) 00000-0000" {...field} />
+                      <Input data-testid="enrollment-phone" placeholder="(00) 00000-0000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -291,7 +292,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="profissional" />
+                            <RadioGroupItem value="profissional" data-testid="participant-type-profissional" />
                           </FormControl>
                           <FormLabel className="font-normal">
                             Profissional

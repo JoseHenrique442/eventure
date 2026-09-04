@@ -4,6 +4,18 @@ import { authenticateUser, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
+const withSpecialization = (participant: any) => ({
+  ...participant,
+  student: participant.participant_type === 'estudante' ? {
+    instituicao_ensino: participant.instituicao_ensino,
+    matricula: participant.matricula,
+  } : null,
+  professional: participant.participant_type === 'profissional' ? {
+    empresa: participant.empresa,
+    cargo: participant.cargo,
+  } : null,
+});
+
 // GET participant by user_id
 router.get('/by-user', authenticateUser, async (req: AuthRequest, res) => {
   try {
@@ -21,7 +33,7 @@ router.get('/by-user', authenticateUser, async (req: AuthRequest, res) => {
       [req.userId]
     ) as any[];
     
-    res.json(participant || null);
+    res.json(participant ? withSpecialization(participant) : null);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -54,7 +66,7 @@ router.get('/by-category', async (req, res) => {
     }
     
     const participants = await query(sql, params);
-    res.json(participants);
+    res.json((participants as any[]).map(withSpecialization));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -63,7 +75,9 @@ router.get('/by-category', async (req, res) => {
 // POST create participant
 router.post('/', authenticateUser, async (req: AuthRequest, res) => {
   try {
-    const { full_name, email, phone, participant_type, student_data, professional_data } = req.body;
+    const { full_name, email, phone, participant_type } = req.body;
+    const student_data = req.body.student_data || req.body.student;
+    const professional_data = req.body.professional_data || req.body.professional;
     
     const result = await query(
       'INSERT INTO participants (user_id, full_name, email, phone, participant_type) VALUES (?, ?, ?, ?, ?)',
@@ -94,7 +108,9 @@ router.post('/', authenticateUser, async (req: AuthRequest, res) => {
 // PUT update participant
 router.put('/:id', authenticateUser, async (req: AuthRequest, res) => {
   try {
-    const { full_name, email, phone, student_data, professional_data } = req.body;
+    const { full_name, email, phone } = req.body;
+    const student_data = req.body.student_data || req.body.student;
+    const professional_data = req.body.professional_data || req.body.professional;
     
     await query(
       'UPDATE participants SET full_name = ?, email = ?, phone = ? WHERE id = ? AND user_id = ?',

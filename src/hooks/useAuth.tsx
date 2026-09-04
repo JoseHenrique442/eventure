@@ -1,127 +1,120 @@
-import { useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { API_BASE_URL, AUTH_STORAGE_KEY } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
-export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+export interface AuthUser {
+  id: string;
+  email: string;
+  user_metadata: { full_name?: string };
+}
+
+export interface AuthSession {
+  access_token: string;
+  user: AuthUser;
+}
+
+interface AuthContextValue {
+  user: AuthUser | null;
+  session: AuthSession | null;
+  loading: boolean;
+  signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
+  signIn: (email: string, password: string) => Promise<AuthResult>;
+  signOut: () => Promise<void>;
+}
+
+interface AuthResult {
+  data: { user: AuthUser; session: AuthSession } | null;
+  error: Error | null;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+const readStoredSession = (): AuthSession | null => {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null');
+  } catch {
+    return null;
+  }
+};
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<AuthSession | null>(readStoredSession);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const storedSession = readStoredSession();
+    if (!storedSession) {
       setLoading(false);
-    });
+      return;
+    }
 
-    return () => subscription.unsubscribe();
+    fetch(`${API_BASE_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${storedSession.access_token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Sessão expirada');
+        const { user } = await response.json();
+        const refreshedSession = { ...storedSession, user };
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(refreshedSession));
+        setSession(refreshedSession);
+      })
+      .catch(() => {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        setSession(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const authenticate = async (endpoint: 'signup' | 'signin', body: object): Promise<AuthResult> => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-          }
-        }
+      const response = await fetch(`${API_BASE_URL}/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Falha na autenticação');
 
-      if (error) throw error;
-
-      // Insert default role as 'user'
-      if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: data.user.id, role: 'user' });
-        
-        if (roleError) {
-          console.error('Error creating user role:', roleError);
-        }
-      }
-
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data.session));
+      setSession(data.session);
       toast({
-        title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar sua conta.",
+        title: endpoint === 'signup' ? 'Cadastro realizado!' : 'Login realizado!',
+        description: endpoint === 'signup' ? 'Sua conta está pronta para uso.' : 'Bem-vindo de volta.',
       });
-
       return { data, error: null };
-    } catch (error: any) {
+    } catch (caughtError) {
+      const error = caughtError instanceof Error ? caughtError : new Error('Falha na autenticação');
       toast({
-        title: "Erro no cadastro",
+        title: endpoint === 'signup' ? 'Erro no cadastro' : 'Erro no login',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return { data: null, error };
     }
   };
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  const signUp = (email: string, password: string, fullName: string) =>
+    authenticate('signup', { email, password, fullName });
 
-      if (error) throw error;
-
-      toast({
-        title: "Login realizado!",
-        description: "Bem-vindo de volta.",
-      });
-
-      return { data, error: null };
-    } catch (error: any) {
-      toast({
-        title: "Erro no login",
-        description: error.message,
-        variant: "destructive",
-      });
-      return { data: null, error };
-    }
-  };
+  const signIn = (email: string, password: string) =>
+    authenticate('signin', { email, password });
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      toast({
-        title: "Logout realizado",
-        description: "Até logo!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro no logout",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    setSession(null);
+    toast({ title: 'Logout realizado', description: 'Até logo!' });
   };
 
-  return {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-  };
+  return (
+    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signUp, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  return context;
 };

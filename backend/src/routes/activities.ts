@@ -4,6 +4,15 @@ import { authenticateUser } from '../middleware/auth';
 
 const router = express.Router();
 
+const withSpecialization = (activity: any) => ({
+  ...activity,
+  lecture: activity.lecture_tema ? { tema: activity.lecture_tema } : null,
+  workshop: activity.workshop_instrutor ? {
+    instrutor: activity.workshop_instrutor,
+    vagas: activity.workshop_vagas,
+  } : null,
+});
+
 // GET activities with details (lectures/workshops)
 router.get('/with-details', async (req, res) => {
   try {
@@ -29,7 +38,7 @@ router.get('/with-details', async (req, res) => {
     sql += ' ORDER BY a.activity_date ASC';
     
     const activities = await query(sql, params);
-    res.json(activities);
+    res.json((activities as any[]).map(withSpecialization));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -77,7 +86,7 @@ router.get('/by-event/:eventId', async (req, res) => {
     `;
     
     const activities = await query(sql, [req.params.eventId]);
-    res.json(activities);
+    res.json((activities as any[]).map(withSpecialization));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -94,7 +103,17 @@ router.post('/', authenticateUser, async (req, res) => {
       [event_id, title, description, activity_type, activity_date, duration, location]
     );
     
-    res.json({ id: result.insertId, message: 'Activity created successfully' });
+    if (activity_type === 'palestra' && req.body.lecture_data?.tema) {
+      await query('INSERT INTO lectures (activity_id, tema) VALUES (?, ?)', [
+        result.insertId, req.body.lecture_data.tema,
+      ]);
+    } else if (activity_type === 'oficina' && req.body.workshop_data) {
+      await query('INSERT INTO workshops (activity_id, instrutor, vagas) VALUES (?, ?, ?)', [
+        result.insertId, req.body.workshop_data.instrutor, req.body.workshop_data.vagas,
+      ]);
+    }
+
+    res.status(201).json({ id: result.insertId, message: 'Activity created successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

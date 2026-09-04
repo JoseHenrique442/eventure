@@ -44,7 +44,7 @@ export const EventCard = ({
   });
 
   return (
-    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+    <Card data-testid="event-card" className="overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
       <div className="relative h-48 overflow-hidden">
         <img
           src={imageUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"}

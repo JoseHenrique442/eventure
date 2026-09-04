@@ -147,58 +147,34 @@ if (activity.activity_type === 'oficina' && activity.workshop) {
 ### Exemplo: Criar um Participante Estudante
 
 ```typescript
-// 1. Criar o participante
-const { data: participant, error: participantError } = await supabase
-  .from('participants')
-  .insert({
-    user_id: userId,
+// A API associa automaticamente o participante ao usuário autenticado.
+const participant = await participantsApi.create({
     full_name: 'João Silva',
     email: 'joao@email.com',
     phone: '(11) 98765-4321',
-    participant_type: 'estudante'
-  })
-  .select()
-  .single();
-
-// 2. Criar o registro de estudante
-if (participant) {
-  const { error: studentError } = await supabase
-    .from('students')
-    .insert({
-      participant_id: participant.id,
+    participant_type: 'estudante',
+    student_data: {
       instituicao_ensino: 'Universidade Federal',
       matricula: '2024001'
-    });
-}
+    }
+});
 ```
 
 ### Exemplo: Criar uma Atividade do tipo Palestra
 
 ```typescript
-// 1. Criar a atividade
-const { data: activity, error: activityError } = await supabase
-  .from('activities')
-  .insert({
+const activity = await activitiesApi.create({
     event_id: eventId,
     title: 'Inovação na Tecnologia',
     description: 'Palestra sobre tendências',
     activity_date: '2025-10-15T14:00:00',
     duration: 120,
     activity_type: 'palestra',
-    location: 'Auditório Principal'
-  })
-  .select()
-  .single();
-
-// 2. Criar o registro de palestra
-if (activity) {
-  const { error: lectureError } = await supabase
-    .from('lectures')
-    .insert({
-      activity_id: activity.id,
+    location: 'Auditório Principal',
+    lecture_data: {
       tema: 'Inteligência Artificial e Machine Learning'
-    });
-}
+    }
+});
 ```
 
 ---

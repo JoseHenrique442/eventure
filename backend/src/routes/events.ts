@@ -8,7 +8,6 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const events = await query('SELECT * FROM events ORDER BY start_date DESC');
-    console.log('Events fetched:', events);
     res.json(events);
   } catch (error: any) {
     console.error('Error fetching events:', error);
@@ -20,7 +19,7 @@ router.get('/', async (req, res) => {
 router.get('/future', async (req, res) => {
   try {
     const events = await query(
-      'SELECT * FROM events WHERE start_date >= NOW() ORDER BY start_date ASC'
+      "SELECT * FROM events WHERE datetime(start_date) >= datetime('now') ORDER BY datetime(start_date) ASC"
     );
     res.json(events);
   } catch (error: any) {

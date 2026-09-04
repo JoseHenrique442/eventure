@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { paymentsApi } from "@/lib/api";
+import { enrollmentsApi, paymentsApi } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,11 +31,7 @@ const Checkout = () => {
 
   const { data: enrollmentData, isLoading } = useQuery({
     queryKey: ["enrollment", enrollmentId],
-    queryFn: async () => {
-      const response = await fetch(`http://localhost:3001/api/enrollments/${enrollmentId}`);
-      if (!response.ok) throw new Error("Falha ao buscar inscrição");
-      return response.json();
-    },
+    queryFn: () => enrollmentsApi.getById(enrollmentId!),
     enabled: !!enrollmentId && !!user,
   });
 
@@ -70,7 +66,7 @@ const Checkout = () => {
         navigate("/meus-ingressos");
       }, 2000);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Erro ao confirmar pagamento:", error);
       toast.error(error.message || "Erro ao confirmar pagamento");
     },

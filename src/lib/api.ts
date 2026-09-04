@@ -1,16 +1,18 @@
-import { supabase } from "@/integrations/supabase/client";
-
-const API_BASE_URL = "http://localhost:3001/api";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+export const AUTH_STORAGE_KEY = "eventure-auth";
 
 // Helper para obter o token de autenticação
-async function getAuthToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token || null;
+function getAuthToken(): string | null {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null')?.access_token || null;
+  } catch {
+    return null;
+  }
 }
 
 // Helper para fazer requisições com autenticação
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = await getAuthToken();
+  const token = getAuthToken();
   
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -27,7 +29,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Erro na requisição" }));
-    throw new Error(error.message || `HTTP ${response.status}`);
+    throw new Error(error.error || error.message || `HTTP ${response.status}`);
   }
 
   return response.json();
@@ -109,7 +111,9 @@ export const ticketsApi = {
 
 // Speakers
 export const speakersApi = {
-  getWithDetails: () => fetchWithAuth("/speakers/with-details"),
+  getWithDetails: (specialistsOnly = false) => fetchWithAuth(
+    `/speakers/with-details${specialistsOnly ? '?type=especialista' : ''}`
+  ),
   getByActivity: (activityId: string) => 
     fetchWithAuth(`/speakers/by-activity/${activityId}`),
 };
