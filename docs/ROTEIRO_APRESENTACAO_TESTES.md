@@ -2,11 +2,6 @@
 
 ## Preparação antes da gravação
 
-- Fechar programas e notificações que possam exibir informações pessoais.
-- Confirmar que câmera, microfone e compartilhamento de tela estão funcionando.
-- Aumentar a fonte do editor e do terminal.
-- Instalar o Apache JMeter 5.6.3 e configurar `JMETER_HOME` ou adicionar sua pasta
-  `bin` ao `PATH`.
 - Deixar abertos:
   - `tests/e2e/eventure.spec.ts`;
   - `playwright.config.ts`;
@@ -16,7 +11,6 @@
   - um terminal na raiz do projeto.
 - Executar as três suítes uma vez antes de gravar para eliminar problemas de
   instalação, portas ocupadas ou download de navegador.
-- Anotar os números reais dos dois cenários JMeter na tabela deste roteiro.
 
 ## 0:00–1:00 — Apresentação do sistema
 

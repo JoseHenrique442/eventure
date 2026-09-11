@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Eventure - Testes funcionais HTTP">
-      <stringProp name="TestPlan.comments">Três cenários equivalentes aos testes Playwright e Selenium, executados contra um SQLite isolado.</stringProp>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan"
+      testname="Eventure - Testes funcionais HTTP">
+      <stringProp name="TestPlan.comments">Três cenários equivalentes aos testes Playwright e
+        Selenium, executados contra um SQLite isolado.</stringProp>
       <boolProp name="TestPlan.functional_mode">true</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
-        <collectionProp name="Arguments.arguments"/>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments"
+        guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments" />
       </elementProp>
     </TestPlan>
     <hashTree>
-      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="API Eventure">
-        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
-          <collectionProp name="Arguments.arguments"/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement"
+        testname="API Eventure">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments"
+          guiclass="HTTPArgumentsPanel" testclass="Arguments">
+          <collectionProp name="Arguments.arguments" />
         </elementProp>
         <stringProp name="HTTPSampler.domain">${__P(api_host,127.0.0.1)}</stringProp>
         <stringProp name="HTTPSampler.port">${__P(api_port,3103)}</stringProp>
@@ -21,7 +26,7 @@
         <stringProp name="HTTPSampler.connect_timeout">5000</stringProp>
         <stringProp name="HTTPSampler.response_timeout">10000</stringProp>
       </ConfigTestElement>
-      <hashTree/>
+      <hashTree />
       <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Cabeçalhos JSON">
         <collectionProp name="HeaderManager.headers">
           <elementProp name="" elementType="Header">
@@ -38,32 +43,38 @@
           </elementProp>
         </collectionProp>
       </HeaderManager>
-      <hashTree/>
+      <hashTree />
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Usuário Eventure">
         <stringProp name="ThreadGroup.num_threads">${__P(users,1)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_up,1)}</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+          guiclass="LoopControlPanel" testclass="LoopController">
           <stringProp name="LoopController.loops">${__P(loops,1)}</stringProp>
           <boolProp name="LoopController.continue_forever">false</boolProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Teste 1 - Listagem de eventos">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController"
+          testname="Teste 1 - Listagem de eventos">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/events">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="GET /api/events">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
             <stringProp name="HTTPSampler.path">/api/events</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valida eventos e seleciona Women in Tech">
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Valida eventos e seleciona Women in Tech">
               <stringProp name="scriptLanguage">groovy</stringProp>
               <stringProp name="parameters"></stringProp>
               <stringProp name="filename"></stringProp>
@@ -79,22 +90,25 @@ try {
 } catch (Exception error) { fail("JSON de eventos inválido: ${error.message}") }
               ]]></stringProp>
             </JSR223Assertion>
-            <hashTree/>
+            <hashTree />
           </hashTree>
         </hashTree>
 
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Teste 2 - Autenticação e sessão">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController"
+          testname="Teste 2 - Autenticação e sessão">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/signin">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="POST /api/auth/signin">
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">{&quot;email&quot;:&quot;demo@eventure.local&quot;,&quot;password&quot;:&quot;eventure123&quot;}</stringProp>
+                  <stringProp name="Argument.value">
+                    {&quot;email&quot;:&quot;demo@eventure.local&quot;,&quot;password&quot;:&quot;eventure123&quot;}</stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
                 </elementProp>
               </collectionProp>
@@ -105,9 +119,12 @@ try {
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valida login e extrai token">
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Valida login e extrai token">
               <stringProp name="scriptLanguage">groovy</stringProp>
-              <stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '200') { fail("Esperado HTTP 200, recebido ${prev.responseCode}"); return }
@@ -118,18 +135,25 @@ try {
 } catch (Exception error) { fail("JSON de login inválido: ${error.message}") }
               ]]></stringProp>
             </JSR223Assertion>
-            <hashTree/>
+            <hashTree />
           </hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/auth/me">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="GET /api/auth/me">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
             <stringProp name="HTTPSampler.path">/api/auth/me</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valida sessão autenticada">
-              <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Valida sessão autenticada">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '200') { fail("Esperado HTTP 200, recebido ${prev.responseCode}"); return }
@@ -139,23 +163,33 @@ try {
 } catch (Exception error) { fail("JSON da sessão inválido: ${error.message}") }
               ]]></stringProp>
             </JSR223Assertion>
-            <hashTree/>
+            <hashTree />
           </hashTree>
         </hashTree>
 
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Teste 3 - Inscrição e checkout">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController"
+          testname="Teste 3 - Inscrição e checkout">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/participants/by-user">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-            <stringProp name="HTTPSampler.path">/api/participants/by-user</stringProp><stringProp name="HTTPSampler.method">GET</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="GET /api/participants/by-user">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/participants/by-user</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Extrai participante">
-              <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Extrai participante">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '200') { fail("Esperado HTTP 200, recebido ${prev.responseCode}"); return }
@@ -165,16 +199,26 @@ try {
   vars.put('participant_id', body.id.toString())
 } catch (Exception error) { fail("JSON de participante inválido: ${error.message}") }
               ]]></stringProp>
-            </JSR223Assertion><hashTree/>
+            </JSR223Assertion>
+            <hashTree />
           </hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/tickets/by-event">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-            <stringProp name="HTTPSampler.path">/api/tickets/by-event/${event_id}</stringProp><stringProp name="HTTPSampler.method">GET</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="GET /api/tickets/by-event">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/tickets/by-event/${event_id}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Seleciona ingresso inteiro">
-              <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Seleciona ingresso inteiro">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '200') { fail("Esperado HTTP 200, recebido ${prev.responseCode}"); return }
@@ -186,21 +230,34 @@ try {
   vars.put('ticket_price', ticket.price.toString())
 } catch (Exception error) { fail("JSON de ingressos inválido: ${error.message}") }
               ]]></stringProp>
-            </JSR223Assertion><hashTree/>
+            </JSR223Assertion>
+            <hashTree />
           </hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/enrollments">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="POST /api/enrollments">
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
-              <elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&quot;participant_id&quot;:&quot;${participant_id}&quot;,&quot;event_id&quot;:&quot;${event_id}&quot;,&quot;ticket_id&quot;:&quot;${ticket_id}&quot;}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp></elementProp>
-            </collectionProp></elementProp>
-            <stringProp name="HTTPSampler.path">/api/enrollments</stringProp><stringProp name="HTTPSampler.method">POST</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">
+                    {&quot;participant_id&quot;:&quot;${participant_id}&quot;,&quot;event_id&quot;:&quot;${event_id}&quot;,&quot;ticket_id&quot;:&quot;${ticket_id}&quot;}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/enrollments</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valida e extrai inscrição">
-              <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Valida e extrai inscrição">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '201') { fail("Esperado HTTP 201, recebido ${prev.responseCode}"); return }
@@ -210,16 +267,26 @@ try {
   vars.put('enrollment_id', body.id.toString())
 } catch (Exception error) { fail("JSON da inscrição inválido: ${error.message}") }
               ]]></stringProp>
-            </JSR223Assertion><hashTree/>
+            </JSR223Assertion>
+            <hashTree />
           </hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/enrollments/{id} - checkout">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-            <stringProp name="HTTPSampler.path">/api/enrollments/${enrollment_id}</stringProp><stringProp name="HTTPSampler.method">GET</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy"
+            testname="GET /api/enrollments/{id} - checkout">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/enrollments/${enrollment_id}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valida dados do checkout">
-              <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"></stringProp><stringProp name="filename"></stringProp><stringProp name="cacheKey">true</stringProp>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion"
+              testname="Valida dados do checkout">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script"><![CDATA[
 def fail = { message -> AssertionResult.setFailure(true); AssertionResult.setFailureMessage(message) }
 if (prev.responseCode != '200') { fail("Esperado HTTP 200, recebido ${prev.responseCode}"); return }
@@ -229,7 +296,8 @@ try {
   if (body.ticket?.ticket_type != 'inteira' || Math.abs(body.ticket.price as double - 179.9d) > 0.001d) fail('Checkout retornou ingresso ou preço incorreto')
 } catch (Exception error) { fail("JSON do checkout inválido: ${error.message}") }
               ]]></stringProp>
-            </JSR223Assertion><hashTree/>
+            </JSR223Assertion>
+            <hashTree />
           </hashTree>
         </hashTree>
       </hashTree>
