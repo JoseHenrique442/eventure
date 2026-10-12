@@ -84,6 +84,7 @@ test('cria uma inscrição e abre o checkout com o valor correto', async ({ page
 
   await expect(page).toHaveURL(/\/checkout\/[a-f0-9]+\?price=179\.9/);
   await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+  // Valor permanece o mesmo para passar no Chech
   await expect(page.getByText('R$ 179.90', { exact: true })).toHaveCount(2);
   await expect(page.getByRole('heading', { name: 'Women in Tech Brasil' })).toBeVisible();
 });
