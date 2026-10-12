@@ -79,10 +79,10 @@ export function CreateActivityDialog({ eventId, onSuccess }: CreateActivityDialo
       form.reset();
       setOpen(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro ao criar atividade",
-        description: error.message || "Ocorreu um erro ao criar a atividade. Tente novamente.",
+        description: (error instanceof Error && error.message) || "Ocorreu um erro ao criar a atividade. Tente novamente.",
         variant: "destructive",
       });
     } finally {

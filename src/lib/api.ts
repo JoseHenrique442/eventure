@@ -1,3 +1,6 @@
+import type { ActivityInput, EnrollmentInput, EventInput, ParticipantInput, PaymentInput, PurchaseTicketInput } from './api-types';
+import type { SpeakerWithDetails } from '@/hooks/useSpeakersWithDetails';
+
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 export const AUTH_STORAGE_KEY = "eventure-auth";
 
@@ -41,11 +44,11 @@ export const eventsApi = {
   getFuture: () => fetchWithAuth("/events/future"),
   getWithCelebrities: () => fetchWithAuth("/events/with-celebrities"),
   getById: (id: string) => fetchWithAuth(`/events/${id}`),
-  create: (data: any) => fetchWithAuth("/events", {
+  create: (data: EventInput) => fetchWithAuth("/events", {
     method: "POST",
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => fetchWithAuth(`/events/${id}`, {
+  update: (id: string, data: EventInput) => fetchWithAuth(`/events/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   }),
@@ -64,7 +67,7 @@ export const activitiesApi = {
   },
   getRanking: (limit: number = 5) => 
     fetchWithAuth(`/activities/ranking?limit=${limit}`),
-  create: (data: any) => fetchWithAuth("/activities", {
+  create: (data: ActivityInput) => fetchWithAuth("/activities", {
     method: "POST",
     body: JSON.stringify(data),
   }),
@@ -79,11 +82,11 @@ export const participantsApi = {
       : "/participants/by-category";
     return fetchWithAuth(url);
   },
-  create: (data: any) => fetchWithAuth("/participants", {
+  create: (data: ParticipantInput) => fetchWithAuth("/participants", {
     method: "POST",
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => fetchWithAuth(`/participants/${id}`, {
+  update: (id: string, data: Partial<ParticipantInput>) => fetchWithAuth(`/participants/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   }),
@@ -94,11 +97,11 @@ export const enrollmentsApi = {
   getMyEnrollments: () => fetchWithAuth("/enrollments/my-enrollments"),
   getWithPaymentStatus: () => fetchWithAuth("/enrollments/with-payment-status"),
   getById: (id: string) => fetchWithAuth(`/enrollments/${id}`),
-  create: (data: any) => fetchWithAuth("/enrollments", {
+  create: (data: EnrollmentInput) => fetchWithAuth("/enrollments", {
     method: "POST",
     body: JSON.stringify(data),
   }),
-  purchaseTicket: (data: any) => fetchWithAuth("/enrollments/purchase-ticket", {
+  purchaseTicket: (data: PurchaseTicketInput) => fetchWithAuth("/enrollments/purchase-ticket", {
     method: "POST",
     body: JSON.stringify(data),
   }),
@@ -115,12 +118,12 @@ export const speakersApi = {
     `/speakers/with-details${specialistsOnly ? '?type=especialista' : ''}`
   ),
   getByActivity: (activityId: string) => 
-    fetchWithAuth(`/speakers/by-activity/${activityId}`),
+    fetchWithAuth(`/speakers/by-activity/${activityId}`) as Promise<SpeakerWithDetails[]>,
 };
 
 // Payments
 export const paymentsApi = {
-  create: (data: any) => fetchWithAuth("/payments", {
+  create: (data: PaymentInput) => fetchWithAuth("/payments", {
     method: "POST",
     body: JSON.stringify(data),
   }),

@@ -1,3 +1,4 @@
+import type { ParticipantInput } from '@/lib/api-types';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -101,7 +102,7 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
 
       // Se não existe perfil, criar um novo
       if (!participantId) {
-        const participantData: any = {
+        const participantData: ParticipantInput = {
           full_name: values.full_name,
           email: values.email,
           phone: values.phone,
@@ -148,9 +149,9 @@ export function EnrollmentDialog({ eventId, tickets, onSuccess }: EnrollmentDial
       }, 500);
       
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao realizar inscrição:", error);
-      toast.error(error.message || "Erro ao realizar inscrição");
+      toast.error((error instanceof Error && error.message) || "Erro ao realizar inscrição");
     } finally {
       setIsSubmitting(false);
     }

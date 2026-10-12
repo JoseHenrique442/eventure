@@ -136,10 +136,10 @@ export default function CriarEvento() {
       });
 
       navigate(`/evento/${eventData.id}`);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro ao criar evento",
-        description: error.message || "Ocorreu um erro ao criar o evento. Tente novamente.",
+        description: (error instanceof Error && error.message) || "Ocorreu um erro ao criar o evento. Tente novamente.",
         variant: "destructive",
       });
     } finally {

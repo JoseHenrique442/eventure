@@ -274,7 +274,7 @@ const EventDetails = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {speakers.map((speaker: any) => (
+                      {speakers.map((speaker) => (
                         <div key={speaker.id} className="flex gap-4 p-4 border rounded-lg">
                           {speaker.photo_url ? (
                             <img 
