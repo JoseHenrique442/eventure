@@ -1,128 +1,77 @@
-## How can I edit this code?
+# Eventure
 
-There are several ways of editing your application.
+Aplicação web para divulgação de eventos, autenticação de usuários e inscrição com checkout demonstrativo. O projeto aplica práticas de DevOps e QAOps com testes automatizados e verificações de qualidade em pull requests.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Tecnologias e estrutura
 
-Follow these steps:
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS e shadcn/ui (`src/`).
+- **Backend:** Node.js, Express e SQLite (`backend/`).
+- **Testes:** Vitest, Playwright, Selenium, JMeter e k6 (`tests/`).
+- **CI:** GitHub Actions (`.github/workflows/`).
+
+O frontend consome a API REST do backend, que armazena os dados no SQLite. O banco e os dados de demonstração são criados automaticamente na primeira execução.
+
+## Executar localmente
+
+Requisitos: Node.js 22 e npm. Na raiz do repositório:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm ci
+npm ci --prefix backend
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+- Frontend: `http://localhost:8080`
+- API: `http://localhost:3001/api`
+- Banco local: `backend/data/eventure.sqlite`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Para iniciar separadamente, use `npm run dev:frontend` e `npm run dev:backend` em terminais distintos.
 
-**Use GitHub Codespaces**
+A API local já é o padrão. Para alterar o endereço, defina `VITE_API_URL` no `.env` da raiz. As opções do backend estão em [backend/.env.example](backend/.env.example); mantenha configurações sensíveis fora do Git.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Testes e verificações
 
-## What technologies are used for this project?
+Vitest, Playwright e Selenium verificam quatro cenários: listagem de eventos, login com persistência da sessão, rejeição de senha incorreta e inscrição com validação do valor no checkout. Esses casos cobrem riscos de falha na exibição, autenticação e cobrança exibida.
 
-This project is built with:
+| Verificação | Comando                                            | Finalidade                                                   |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| Vitest      | `npm run test:unit`                                | Testar componentes e lógica com dependências simuladas.      |
+| Playwright  | `npm run test:e2e`                                 | Validar os fluxos pela interface e sua integração com a API. |
+| Selenium    | `npm run test:selenium`                            | Repetir os cenários de interface com WebDriver.              |
+| JMeter      | `npm run test:jmeter`                              | Validar respostas HTTP e medir desempenho sob carga.         |
+| k6          | `npm run test:k6`                                  | Validar a API sob carga com checks e limites automáticos.    |
+| ESLint      | `npm run lint`                                     | Detectar problemas de código pelas regras configuradas.      |
+| Build       | `npm run build` e `npm --prefix backend run build` | Gerar o frontend e compilar o backend.                       |
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Para Playwright e Selenium, instale também o **Bun**, usado pelos scripts que iniciam os servidores. Prepare o Chromium do Playwright com `npx playwright install chromium`; Selenium utiliza o Google Chrome instalado.
 
-## Backend local
+JMeter requer Java e Apache JMeter no `PATH` ou `JMETER_HOME` definido. k6 requer o executável no `PATH` ou `K6_BIN` definido.
 
-O projeto usa uma API Express com SQLite e autenticação local. Em outro terminal:
+Os testes de interface e carga iniciam os serviços necessários automaticamente e utilizam bancos SQLite separados da base de desenvolvimento. JMeter e k6 executam os fluxos de listagem, login e inscrição em dois cenários: **1 usuário com ramp-up de 1 segundo** e **10 usuários com ramp-up de 10 segundos**, com uma repetição por usuário.
 
-```sh
-cd backend
-npm install
-npm run dev
-```
+## Pipeline e quality gates
 
-O comando `npm run dev` inicia o frontend (`http://localhost:8080`) e a API
-SQLite (`http://localhost:3001`) juntos. Para executá-los separadamente, use
-`npm run dev:frontend` e `npm run dev:backend` em terminais diferentes.
+A CI é acionada em cada **pull request**, em Ubuntu com Node.js 22. Os workflows executam em paralelo:
 
-### Testes Playwright
+- [Build](.github/workflows/build.yaml): instalação das dependências e build do frontend e backend.
+- [Linting](.github/workflows/linting.yaml): instalação das dependências e análise com ESLint.
+- [Automated Tests](.github/workflows/tests.yaml): Vitest, Playwright e k6, com publicação dos resultados de Playwright e k6.
 
-Os testes de interface usam um SQLite isolado e iniciam frontend e backend
-automaticamente:
+| Gate              | Critério de aprovação                                           | Risco controlado                                  | Evidência                                 |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------- |
+| Build             | Ambos os builds terminam sem erro.                              | Alterações que impedem gerar a aplicação.         | Logs do workflow Build.                   |
+| Análise estática  | Nenhum erro do ESLint; avisos não bloqueiam.                    | Problemas detectáveis pelas regras de código.     | Logs do workflow Linting.                 |
+| Testes funcionais | Todos os testes Vitest e Playwright passam.                     | Regressões nos cenários selecionados.             | Logs do Vitest e relatório do Playwright. |
+| API sob carga     | 100% dos checks, 0% de falhas HTTP e P90 menor que 10 segundos. | Respostas incorretas e lentidão acentuada na API. | Logs e resumos do k6.                     |
 
-```sh
-bun test:e2e
-```
+Esses critérios são avaliados em cada execução da CI. Uma falha reprova o respectivo job. Para impedir o merge, os checks precisam ser obrigatórios nas regras de proteção da branch.
 
-Para executar com a interface visual do Playwright, use `bun test:e2e:ui`.
+Os testes exigem aprovação integral porque cobrem os fluxos principais. O limite de 10 segundos do k6 detecta lentidão acentuada neste experimento de pequena carga; não representa uma meta de desempenho de produção. Selenium e JMeter são executados localmente e complementam as ferramentas usadas na CI.
 
-### Testes Selenium
+## Relatórios e evidências
 
-Os mesmos três cenários também estão disponíveis em Selenium WebDriver, com
-uma base SQLite isolada:
-
-```sh
-bun test:selenium
-```
-
-### Testes unitários com Vitest
-
-Os testes unitários reproduzem os principais cenários funcionais com as
-dependências externas simuladas: listagem e renderização de eventos,
-autenticação e persistência da sessão, rejeição de credenciais inválidas e o
-fluxo de inscrição com consulta dos dados do checkout.
-
-```sh
-bun test:unit
-```
-
-Durante o desenvolvimento, use `bun test:unit:watch`. Para gerar o relatório
-de cobertura em `test-results/vitest/coverage`, use `bun test:unit:coverage`.
-
-### Testes JMeter
-
-O plano JMeter executa os mesmos três fluxos no nível HTTP: listagem de
-eventos, autenticação com validação da sessão e inscrição com consulta dos
-dados usados pelo checkout. Ele inicia o backend automaticamente com um SQLite
-isolado e executa dois cenários de carga: 1 usuário com ramp-up de 1 segundo e
-10 usuários com ramp-up de 10 segundos, ambos com uma repetição. Os resultados
-ficam em `test-results/jmeter/1-user` e `test-results/jmeter/10-users`; o resumo
-comparativo é gerado em `test-results/jmeter/COMPARISON.md`.
-
-Com o Apache JMeter instalado e disponível no `PATH` (ou com `JMETER_HOME`
-definido), execute:
-
-```sh
-bun test:jmeter
-```
-
-### Testes Grafana k6
-
-A suíte k6 reproduz os mesmos fluxos HTTP e os mesmos cenários de carga do
-JMeter, incluindo checks das respostas e thresholds para erros, checks e P90.
-Ela inicia o backend automaticamente com outro SQLite isolado. Os resultados
-ficam em `test-results/k6/1-user` e `test-results/k6/10-users`, com o comparativo
-em `test-results/k6/COMPARISON.md`.
-
-Com o Grafana k6 instalado e disponível no `PATH` (ou com `K6_BIN` definido),
-execute:
-
-```sh
-bun test:k6
-```
-
-O banco `backend/data/eventure.sqlite` é criado automaticamente. Configure a URL
-da API no `.env` do frontend com `VITE_API_URL=http://localhost:3001/api`.
+- **CI:** logs na aba Actions; artefatos `playwright-results` e `k6-results` ficam disponíveis por 30 dias.
+- **Playwright:** `playwright-report/`; abra com `npm run test:e2e:report`. Em falhas, preserva screenshot, vídeo e trace em `test-results/`.
+- **Vitest:** cobertura opcional com `npm run test:unit:coverage`, em `test-results/vitest/coverage/`.
+- **Selenium:** screenshots de falhas em `test-results/selenium/`.
+- **JMeter e k6:** resultados em `test-results/jmeter/` e `test-results/k6/`, com pastas `1-user`, `10-users` e um `COMPARISON.md` por ferramenta.
