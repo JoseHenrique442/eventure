@@ -1,10 +1,17 @@
+import { getErrorMessage } from '../utils/errors';
 import express from 'express';
-import { query } from '../config/database';
+import { query, queryRows } from '../config/database';
 import { authenticateUser } from '../middleware/auth';
 
 const router = express.Router();
 
-const withSpecialization = (activity: any) => ({
+interface ActivityRow extends Record<string, unknown> {
+  lecture_tema: string | null;
+  workshop_instrutor: string | null;
+  workshop_vagas: number | null;
+}
+
+const withSpecialization = (activity: ActivityRow) => ({
   ...activity,
   lecture: activity.lecture_tema ? { tema: activity.lecture_tema } : null,
   workshop: activity.workshop_instrutor ? {
@@ -37,10 +44,10 @@ router.get('/with-details', async (req, res) => {
     
     sql += ' ORDER BY a.activity_date ASC';
     
-    const activities = await query(sql, params);
-    res.json((activities as any[]).map(withSpecialization));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const activities = await queryRows<ActivityRow>(sql, params);
+    res.json(activities.map(withSpecialization));
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -49,7 +56,7 @@ router.get('/ranking', async (req, res) => {
   try {
     const { limit = 5 } = req.query;
     
-    const ranking = await query(`
+    const ranking = await queryRows(`
       SELECT 
         a.id,
         a.title,
@@ -64,8 +71,8 @@ router.get('/ranking', async (req, res) => {
     `, [parseInt(limit as string)]);
     
     res.json(ranking);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -85,10 +92,10 @@ router.get('/by-event/:eventId', async (req, res) => {
       ORDER BY a.activity_date ASC
     `;
     
-    const activities = await query(sql, [req.params.eventId]);
-    res.json((activities as any[]).map(withSpecialization));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const activities = await queryRows<ActivityRow>(sql, [req.params.eventId]);
+    res.json(activities.map(withSpecialization));
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -114,8 +121,8 @@ router.post('/', authenticateUser, async (req, res) => {
     }
 
     res.status(201).json({ id: result.insertId, message: 'Activity created successfully' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

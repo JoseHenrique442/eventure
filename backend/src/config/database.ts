@@ -185,9 +185,12 @@ export interface QueryResult {
   affectedRows: number;
 }
 
-export const query = async (sql: string, params: unknown[] = []): Promise<any> => {
+export const queryRows = async <T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> => {
+  return database.prepare(sql).all(...params) as T[];
+};
+
+export const query = async (sql: string, params: unknown[] = []): Promise<QueryResult> => {
   const statement = database.prepare(sql);
-  if (statement.reader) return statement.all(...params);
 
   const result = statement.run(...params);
   const insertedTable = /^\s*INSERT\s+INTO\s+([a-z_]+)/i.exec(sql)?.[1];

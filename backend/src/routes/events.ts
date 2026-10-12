@@ -1,5 +1,6 @@
+import { getErrorMessage } from '../utils/errors';
 import express from 'express';
-import { query } from '../config/database';
+import { query, queryRows } from '../config/database';
 import { authenticateUser, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
@@ -7,30 +8,30 @@ const router = express.Router();
 // GET all events
 router.get('/', async (req, res) => {
   try {
-    const events = await query('SELECT * FROM events ORDER BY start_date DESC');
+    const events = await queryRows('SELECT * FROM events ORDER BY start_date DESC');
     res.json(events);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching events:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
 // GET future events
 router.get('/future', async (req, res) => {
   try {
-    const events = await query(
+    const events = await queryRows(
       "SELECT * FROM events WHERE datetime(start_date) >= datetime('now') ORDER BY datetime(start_date) ASC"
     );
     res.json(events);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
 // GET events with celebrities
 router.get('/with-celebrities', async (req, res) => {
   try {
-    const events = await query(`
+    const events = await queryRows(`
       SELECT DISTINCT e.*
       FROM events e
       INNER JOIN activities a ON e.id = a.event_id
@@ -40,8 +41,8 @@ router.get('/with-celebrities', async (req, res) => {
       ORDER BY e.start_date DESC
     `);
     res.json(events);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -49,15 +50,15 @@ router.get('/with-celebrities', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     console.log('Fetching event with ID:', req.params.id);
-    const [event] = await query('SELECT * FROM events WHERE id = ?', [req.params.id]) as any[];
+    const [event] = await queryRows('SELECT * FROM events WHERE id = ?', [req.params.id]);
     console.log('Event found:', event);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
     res.json(event);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching event:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -70,11 +71,11 @@ router.post('/', authenticateUser, async (req: AuthRequest, res) => {
       `INSERT INTO events (name, description, start_date, end_date, location, event_type, image_url, organizer_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [name, description, start_date, end_date, location, event_type, image_url, req.userId]
-    ) as any;
+    );
     
     res.status(201).json({ id: result.insertId, message: 'Event created' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -91,8 +92,8 @@ router.put('/:id', authenticateUser, async (req: AuthRequest, res) => {
     );
     
     res.json({ message: 'Event updated' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -101,8 +102,8 @@ router.delete('/:id', authenticateUser, async (req: AuthRequest, res) => {
   try {
     await query('DELETE FROM events WHERE id = ?', [req.params.id]);
     res.json({ message: 'Event deleted' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

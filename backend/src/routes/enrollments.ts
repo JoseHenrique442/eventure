@@ -1,10 +1,11 @@
+import { getErrorMessage } from '../utils/errors';
 import express from 'express';
-import database, { query, transaction } from '../config/database';
+import database, { query, queryRows, transaction } from '../config/database';
 import { authenticateUser, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-const parseDetails = (rows: any[]) => rows.map((row) => {
+const parseDetails = (rows: Record<string, unknown>[]) => rows.map((row) => {
   for (const field of ['event', 'ticket', 'participant', 'payment']) {
     if (typeof row[field] === 'string') row[field] = JSON.parse(row[field]);
   }
@@ -13,7 +14,7 @@ const parseDetails = (rows: any[]) => rows.map((row) => {
 
 router.get('/my-enrollments', authenticateUser, async (req: AuthRequest, res) => {
   try {
-    const enrollments = await query(`
+    const enrollments = await queryRows(`
       SELECT e.*,
         json_object('id', ev.id, 'name', ev.name, 'description', ev.description,
           'start_date', ev.start_date, 'end_date', ev.end_date, 'location', ev.location,
@@ -26,16 +27,16 @@ router.get('/my-enrollments', authenticateUser, async (req: AuthRequest, res) =>
       LEFT JOIN tickets t ON e.ticket_id = t.id
       WHERE p.user_id = ?
       ORDER BY datetime(e.enrollment_date) DESC
-    `, [req.userId]) as any[];
+    `, [req.userId]);
     res.json(parseDetails(enrollments));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
 router.get('/with-payment-status', authenticateUser, async (_req, res) => {
   try {
-    const enrollments = await query(`
+    const enrollments = await queryRows(`
       SELECT e.id, e.enrollment_status, e.enrollment_date,
         p.full_name AS participant_name, p.email AS participant_email,
         ev.name AS event_name, ev.start_date AS event_start_date,
@@ -48,8 +49,8 @@ router.get('/with-payment-status', authenticateUser, async (_req, res) => {
       ORDER BY datetime(e.enrollment_date) DESC
     `);
     res.json(enrollments);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -88,14 +89,14 @@ router.post('/purchase-ticket', authenticateUser, (req: AuthRequest, res) => {
       };
     });
     res.status(201).json(result);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+  } catch (error) {
+    res.status(400).json({ error: getErrorMessage(error) });
   }
 });
 
 router.get('/:id', authenticateUser, async (req: AuthRequest, res) => {
   try {
-    const enrollments = await query(`
+    const enrollments = await queryRows(`
       SELECT e.*,
         json_object('id', ev.id, 'name', ev.name, 'description', ev.description,
           'start_date', ev.start_date, 'end_date', ev.end_date, 'location', ev.location,
@@ -111,21 +112,21 @@ router.get('/:id', authenticateUser, async (req: AuthRequest, res) => {
       LEFT JOIN tickets t ON e.ticket_id = t.id
       LEFT JOIN payments pay ON e.id = pay.enrollment_id
       WHERE e.id = ? AND p.user_id = ?
-    `, [req.params.id, req.userId]) as any[];
+    `, [req.params.id, req.userId]);
     if (!enrollments[0]) return res.status(404).json({ error: 'Inscrição não encontrada' });
     res.json(parseDetails(enrollments)[0]);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
 router.post('/', authenticateUser, async (req: AuthRequest, res) => {
   try {
     const { participant_id, event_id, ticket_id } = req.body;
-    const owner = await query(
+    const owner = await queryRows(
       'SELECT id FROM participants WHERE id = ? AND user_id = ?',
       [participant_id, req.userId]
-    ) as any[];
+    );
     if (!owner.length) return res.status(403).json({ error: 'Participante inválido para este usuário' });
 
     const confirmationCode = `${String(event_id).slice(0, 8)}-${Date.now()}`.toUpperCase();
@@ -134,8 +135,8 @@ router.post('/', authenticateUser, async (req: AuthRequest, res) => {
       VALUES (?, ?, ?, 'pendente', ?)
     `, [participant_id, event_id, ticket_id, confirmationCode]);
     res.status(201).json({ id: result.insertId, confirmation_code: confirmationCode });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

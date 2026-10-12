@@ -1,10 +1,19 @@
+import { getErrorMessage } from '../utils/errors';
 import express from 'express';
-import { query } from '../config/database';
+import { query, queryRows } from '../config/database';
 import { authenticateUser, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-const withSpecialization = (participant: any) => ({
+interface ParticipantRow extends Record<string, unknown> {
+  participant_type: 'estudante' | 'profissional' | 'vip';
+  instituicao_ensino: string | null;
+  matricula: string | null;
+  empresa: string | null;
+  cargo: string | null;
+}
+
+const withSpecialization = (participant: ParticipantRow) => ({
   ...participant,
   student: participant.participant_type === 'estudante' ? {
     instituicao_ensino: participant.instituicao_ensino,
@@ -19,7 +28,7 @@ const withSpecialization = (participant: any) => ({
 // GET participant by user_id
 router.get('/by-user', authenticateUser, async (req: AuthRequest, res) => {
   try {
-    const [participant] = await query(
+    const [participant] = await queryRows<ParticipantRow>(
       `SELECT 
         p.*,
         s.instituicao_ensino,
@@ -31,11 +40,11 @@ router.get('/by-user', authenticateUser, async (req: AuthRequest, res) => {
       LEFT JOIN professionals pr ON p.id = pr.participant_id
       WHERE p.user_id = ?`,
       [req.userId]
-    ) as any[];
+    );
     
     res.json(participant ? withSpecialization(participant) : null);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -65,10 +74,10 @@ router.get('/by-category', async (req, res) => {
       params.push(category);
     }
     
-    const participants = await query(sql, params);
-    res.json((participants as any[]).map(withSpecialization));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const participants = await queryRows<ParticipantRow>(sql, params);
+    res.json(participants.map(withSpecialization));
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -82,7 +91,7 @@ router.post('/', authenticateUser, async (req: AuthRequest, res) => {
     const result = await query(
       'INSERT INTO participants (user_id, full_name, email, phone, participant_type) VALUES (?, ?, ?, ?, ?)',
       [req.userId, full_name, email, phone, participant_type]
-    ) as any;
+    );
     
     const participantId = result.insertId;
     
@@ -100,8 +109,8 @@ router.post('/', authenticateUser, async (req: AuthRequest, res) => {
     }
     
     res.status(201).json({ id: participantId, message: 'Participant created' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
@@ -130,8 +139,8 @@ router.put('/:id', authenticateUser, async (req: AuthRequest, res) => {
     }
     
     res.json({ message: 'Participant updated' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

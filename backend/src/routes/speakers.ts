@@ -1,13 +1,19 @@
+import { getErrorMessage } from '../utils/errors';
 import express from 'express';
-import { query } from '../config/database';
+import { queryRows } from '../config/database';
 
 const router = express.Router();
+
+interface SpeakerRow extends Record<string, unknown> {
+  specialist_area: string | null;
+  celebrity_area: string | null;
+}
 
 // GET speakers with details
 router.get('/with-details', async (req, res) => {
   try {
     const typeFilter = req.query.type === 'especialista' ? ' WHERE s.speaker_type = ?' : '';
-    const speakers = await query(`
+    const speakers = await queryRows<SpeakerRow>(`
       SELECT 
         s.*,
         sp.area_atuacao as specialist_area,
@@ -17,20 +23,20 @@ router.get('/with-details', async (req, res) => {
       LEFT JOIN celebrities c ON s.id = c.speaker_id${typeFilter}
       ORDER BY s.name ASC
     `, typeFilter ? ['especialista'] : []);
-    res.json((speakers as any[]).map((speaker) => ({
+    res.json(speakers.map((speaker) => ({
       ...speaker,
       specialists: speaker.specialist_area ? { area_atuacao: speaker.specialist_area } : null,
       celebrities: speaker.celebrity_area ? { area_fama: speaker.celebrity_area } : null,
     })));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 
 // GET speakers by activity
 router.get('/by-activity/:activityId', async (req, res) => {
   try {
-    const speakers = await query(`
+    const speakers = await queryRows<SpeakerRow>(`
       SELECT 
         s.*,
         sp.area_atuacao as specialist_area,
@@ -42,13 +48,13 @@ router.get('/by-activity/:activityId', async (req, res) => {
       WHERE asp.activity_id = ?
     `, [req.params.activityId]);
     
-    res.json((speakers as any[]).map((speaker) => ({
+    res.json(speakers.map((speaker) => ({
       ...speaker,
       specialists: speaker.specialist_area ? { area_atuacao: speaker.specialist_area } : null,
       celebrities: speaker.celebrity_area ? { area_fama: speaker.celebrity_area } : null,
     })));
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

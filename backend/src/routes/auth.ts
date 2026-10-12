@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'crypto';
 import express from 'express';
 import { promisify } from 'util';
@@ -57,11 +58,12 @@ router.post('/signup', async (req, res) => {
       user: safeUser,
       session: { access_token: createAccessToken(user.id), user: safeUser },
     });
-  } catch (error: any) {
-    if (String(error.code).includes('SQLITE_CONSTRAINT_UNIQUE')) {
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error
+      && String(error.code).includes('SQLITE_CONSTRAINT_UNIQUE')) {
       return res.status(409).json({ error: 'Este email já está cadastrado' });
     }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: getErrorMessage(error) });
   }
 });
 

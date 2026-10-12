@@ -1,3 +1,4 @@
+import { getErrorMessage } from './utils/errors';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -46,9 +47,9 @@ app.use('/api/speakers', speakersRouter);
 app.use('/api/payments', paymentsRouter);
 
 // Error handling
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
-  res.status(500).json({ error: err.message || 'Internal server error' });
+  res.status(500).json({ error: getErrorMessage(err) });
 });
 
 app.listen(PORT, () => {
