@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Frontend and Backend Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build backend
+        run: npm --prefix backend run build
