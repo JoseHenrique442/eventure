@@ -78,6 +78,20 @@ uma base SQLite isolada:
 bun test:selenium
 ```
 
+### Testes unitários com Vitest
+
+Os testes unitários reproduzem os principais cenários funcionais com as
+dependências externas simuladas: listagem e renderização de eventos,
+autenticação e persistência da sessão, rejeição de credenciais inválidas e o
+fluxo de inscrição com consulta dos dados do checkout.
+
+```sh
+bun test:unit
+```
+
+Durante o desenvolvimento, use `bun test:unit:watch`. Para gerar o relatório
+de cobertura em `test-results/vitest/coverage`, use `bun test:unit:coverage`.
+
 ### Testes JMeter
 
 O plano JMeter executa os mesmos três fluxos no nível HTTP: listagem de
@@ -93,6 +107,21 @@ definido), execute:
 
 ```sh
 bun test:jmeter
+```
+
+### Testes Grafana k6
+
+A suíte k6 reproduz os mesmos fluxos HTTP e os mesmos cenários de carga do
+JMeter, incluindo checks das respostas e thresholds para erros, checks e P90.
+Ela inicia o backend automaticamente com outro SQLite isolado. Os resultados
+ficam em `test-results/k6/1-user` e `test-results/k6/10-users`, com o comparativo
+em `test-results/k6/COMPARISON.md`.
+
+Com o Grafana k6 instalado e disponível no `PATH` (ou com `K6_BIN` definido),
+execute:
+
+```sh
+bun test:k6
 ```
 
 O banco `backend/data/eventure.sqlite` é criado automaticamente. Configure a URL
