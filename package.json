@@ -23,6 +23,7 @@
     "build:dev": "vite build --mode development",
     "deploy": "npm run build && wrangler deploy",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview"
   },
   "dependencies": {
