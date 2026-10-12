@@ -3,7 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EventCard } from '@/components/EventCard';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { AuthProvider } from '@/components/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import {
   API_BASE_URL, AUTH_STORAGE_KEY, enrollmentsApi, eventsApi, participantsApi, ticketsApi,
 } from '@/lib/api';

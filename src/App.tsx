@@ -10,7 +10,7 @@ import MeusIngressos from "./pages/MeusIngressos";
 import CriarEvento from "./pages/CriarEvento";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
 

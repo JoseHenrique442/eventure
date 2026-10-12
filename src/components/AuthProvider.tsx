@@ -1,33 +1,7 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { AuthContext, type AuthResult, type AuthSession } from '@/hooks/useAuth';
+import { type ReactNode, useEffect, useState } from 'react';
 import { API_BASE_URL, AUTH_STORAGE_KEY } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  user_metadata: { full_name?: string };
-}
-
-export interface AuthSession {
-  access_token: string;
-  user: AuthUser;
-}
-
-interface AuthContextValue {
-  user: AuthUser | null;
-  session: AuthSession | null;
-  loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
-  signIn: (email: string, password: string) => Promise<AuthResult>;
-  signOut: () => Promise<void>;
-}
-
-interface AuthResult {
-  data: { user: AuthUser; session: AuthSession } | null;
-  error: Error | null;
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null);
 
 const readStoredSession = (): AuthSession | null => {
   try {
@@ -113,8 +87,3 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth deve ser usado dentro de AuthProvider');
-  return context;
-};
